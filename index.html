@@ -25,6 +25,24 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-rose-500 selection:text-white">
 
+  <!-- Secret Admin Top Bar (Hidden for Public Users) -->
+  <div id="adminBar" class="hidden bg-rose-950/90 border-b border-rose-500/40 px-4 py-2 text-xs">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 text-rose-200 font-semibold">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Admin Mode Active</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="openAddModal()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 font-bold text-white transition">
+          + Add Movie
+        </button>
+        <button onclick="adminLogout()" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 transition">
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Navbar -->
   <header class="glass-nav sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -51,13 +69,6 @@
               class="w-full bg-zinc-900/90 border border-zinc-800 focus:border-rose-500 rounded-full pl-10 pr-4 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition" />
           </div>
         </div>
-
-        <!-- Action Buttons -->
-        <div class="flex items-center gap-2.5 shrink-0">
-          <button onclick="openAddModal()" class="px-3.5 py-2 rounded-full bg-rose-600 hover:bg-rose-500 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-rose-600/25 transition flex items-center gap-1.5">
-            <span>+ Add Movie</span>
-          </button>
-        </div>
       </div>
 
       <!-- Mobile Search -->
@@ -71,7 +82,6 @@
     <div class="border-t border-zinc-800/80 bg-zinc-950/60">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div id="categoryTabs" class="flex items-center gap-2 py-2.5 overflow-x-auto no-scrollbar text-xs sm:text-sm font-medium">
-          <!-- Categories injected by JS -->
         </div>
       </div>
     </div>
@@ -123,15 +133,11 @@
         <h2 id="sectionHeading" class="text-lg sm:text-xl font-bold text-white">Latest Releases</h2>
         <span id="movieCount" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300">0</span>
       </div>
-      <div id="dbStatus" class="text-xs text-emerald-400 font-medium">● Connecting DB...</div>
+      <div id="dbStatus" class="text-xs text-zinc-500 font-medium">Loading...</div>
     </div>
 
-    <!-- Grid -->
-    <div id="movieGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-      <!-- Cards injected by JS -->
-    </div>
+    <div id="movieGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"></div>
 
-    <!-- Empty State -->
     <div id="emptyState" class="hidden text-center py-20">
       <p class="text-zinc-400 text-base font-medium">No movies matched your filter.</p>
       <button onclick="resetFilters()" class="mt-3 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-sm text-white transition">Reset Filters</button>
@@ -142,7 +148,7 @@
   <footer class="border-t border-zinc-800/80 bg-zinc-950 py-8 mt-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
       <p>© 2026 Multi Movie Downloader. All rights reserved.</p>
-      <p>Powered by Supabase • Hosted on Render</p>
+      <p>Fast Direct Mirrors • Updated Daily</p>
     </div>
   </footer>
 
@@ -167,7 +173,6 @@
           </div>
         </div>
 
-        <!-- Download Links Section -->
         <div class="mt-6 pt-5 border-t border-zinc-800">
           <h4 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
             <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -175,19 +180,38 @@
             </svg>
             Select Download Quality & Server
           </h4>
-          <div id="modalLinks" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <!-- Links injected here -->
-          </div>
+          <div id="modalLinks" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Add Movie Modal (Saves Directly to Supabase) -->
+  <!-- Secret Admin Login Modal (Triggered only via #admin) -->
+  <div id="adminLoginModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-white">Admin Panel Login</h3>
+        <button onclick="closeAdminLogin()" class="w-8 h-8 rounded-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700">✕</button>
+      </div>
+      <form id="adminLoginForm" class="space-y-3.5 text-sm">
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1">Admin Email</label>
+          <input required id="adminEmail" type="email" placeholder="admin@example.com" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1">Password</label>
+          <input required id="adminPass" type="password" placeholder="••••••••" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
+        </div>
+        <button id="loginBtn" type="submit" class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 font-semibold text-white transition">Unlock Admin Panel</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Add Movie Modal -->
   <div id="addModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
     <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-white">Add New Movie to Database</h3>
+        <h3 class="text-lg font-bold text-white">Publish New Movie</h3>
         <button onclick="closeAddModal()" class="w-8 h-8 rounded-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700">✕</button>
       </div>
       <form id="addMovieForm" class="space-y-3.5 text-sm">
@@ -234,20 +258,19 @@
           <input id="inPoster" type="url" placeholder="https://image.tmdb.org/t/p/w500/..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
         </div>
         <div>
-          <label class="block text-xs text-zinc-400 mb-1">Download URL (Archive.org / Cloudflare R2 / Pixeldrain)</label>
+          <label class="block text-xs text-zinc-400 mb-1">Download URL *</label>
           <input required id="inUrl" type="url" placeholder="https://archive.org/download/..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
         </div>
         <div>
           <label class="block text-xs text-zinc-400 mb-1">Short Description</label>
           <textarea id="inDesc" rows="2" placeholder="Storyline or release info..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500"></textarea>
         </div>
-        <button id="submitBtn" type="submit" class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 font-semibold text-white transition">Save & Publish to Supabase</button>
+        <button id="submitBtn" type="submit" class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 font-semibold text-white transition">Publish Movie</button>
       </form>
     </div>
   </div>
 
   <script>
-    // 1. SUPABASE CONFIGURATION (Connected to your project)
     const SUPABASE_URL = 'https://brpyyaclataxkdgkbskt.supabase.co';
     const SUPABASE_ANON_KEY = 'Sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -287,43 +310,77 @@
           { label: "720p WEB-DL", size: "740 MB", url: "https://archive.org/details/Sita_Sings_the_Blues" },
           { label: "1080p Master", size: "1.8 GB", url: "https://archive.org/details/Sita_Sings_the_Blues" }
         ]
-      },
-      {
-        id: "sample-3",
-        title: "Cyber Horizon: Zero Protocol",
-        year: 2026,
-        category: "Sci-Fi",
-        quality: "4K",
-        audio: "Dual Audio (Hindi + English)",
-        rating: "8.4",
-        gradient: ["#0369a1", "#09090b"],
-        desc: "In a neon-drenched mega-city, a rogue data courier uncovers an AI syndicate rewriting human memory.",
-        links: [
-          { label: "480p Fast", size: "450 MB", url: "#" },
-          { label: "720p HEVC", size: "980 MB", url: "#" },
-          { label: "1080p 60fps", size: "2.4 GB", url: "#" },
-          { label: "4K UHD HDR", size: "6.2 GB", url: "#" }
-        ]
-      },
-      {
-        id: "sample-4",
-        title: "Deccan Storm: Chapter 2",
-        year: 2025,
-        category: "South Indian",
-        quality: "1080p",
-        audio: "Hindi + Telugu + Tamil",
-        rating: "8.6",
-        gradient: ["#be123c", "#27272a"],
-        desc: "High-octane action drama following an undercover officer dismantling a coastal smuggling empire.",
-        links: [
-          { label: "720p HD", size: "1.1 GB", url: "#" },
-          { label: "1080p WEB-DL", size: "2.7 GB", url: "#" }
-        ]
       }
     ];
 
     let allMovies = [...SAMPLE_MOVIES];
     let activeCategory = "All";
+    let isAdmin = false;
+
+    // Check Admin Session & #admin URL hash
+    async function checkAdminSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      isAdmin = !!session;
+      document.getElementById("adminBar").classList.toggle("hidden", !isAdmin);
+
+      if (window.location.hash === "#admin" && !isAdmin) {
+        const modal = document.getElementById("adminLoginModal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+      filterAndRender();
+    }
+
+    window.addEventListener("hashchange", checkAdminSession);
+
+    document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("loginBtn");
+      btn.textContent = "Verifying...";
+      btn.disabled = true;
+
+      const email = document.getElementById("adminEmail").value.trim();
+      const password = document.getElementById("adminPass").value;
+
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      btn.textContent = "Unlock Admin Panel";
+      btn.disabled = false;
+
+      if (error) {
+        alert("Login Failed: " + error.message);
+        return;
+      }
+
+      closeAdminLogin();
+      history.replaceState(null, null, " ");
+      await checkAdminSession();
+    });
+
+    async function adminLogout() {
+      await supabaseClient.auth.signOut();
+      isAdmin = false;
+      document.getElementById("adminBar").classList.add("hidden");
+      filterAndRender();
+    }
+
+    function closeAdminLogin() {
+      const modal = document.getElementById("adminLoginModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    async function deleteMovie(event, id) {
+      event.stopPropagation();
+      if (!isAdmin || !confirm("Delete this movie permanently?")) return;
+
+      const { error } = await supabaseClient.from('movies').delete().eq('id', id);
+      if (error) {
+        alert("Delete failed: " + error.message);
+        return;
+      }
+      await fetchSupabaseMovies();
+    }
 
     function generatePosterSVG(movie) {
       if (movie.poster_url) {
@@ -397,25 +454,29 @@
       }
 
       empty.classList.add("hidden");
-      grid.innerHTML = filtered.map(movie => `
-        <div onclick="openMovieModal('${movie.id}')" class="movie-card group cursor-pointer bg-zinc-900/80 border border-zinc-800/90 hover:border-rose-500/50 rounded-2xl overflow-hidden flex flex-col transition shadow-lg">
-          <div class="aspect-[2/3] w-full overflow-hidden bg-zinc-950 relative">
-            ${generatePosterSVG(movie)}
-          </div>
-          <div class="p-3.5 flex-1 flex flex-col justify-between space-y-2">
-            <div>
-              <h3 class="font-bold text-sm text-zinc-100 group-hover:text-rose-400 transition line-clamp-2 leading-snug">
-                ${movie.title}
-              </h3>
-              <p class="text-[11px] text-zinc-400 mt-1 line-clamp-1">${movie.audio || 'Dual Audio'}</p>
+      grid.innerHTML = filtered.map(movie => {
+        const canDelete = isAdmin && !String(movie.id).startsWith("sample-");
+        return `
+          <div onclick="openMovieModal('${movie.id}')" class="movie-card group cursor-pointer bg-zinc-900/80 border border-zinc-800/90 hover:border-rose-500/50 rounded-2xl overflow-hidden flex flex-col transition shadow-lg relative">
+            ${canDelete ? `<button onclick="deleteMovie(event, '${movie.id}')" class="absolute top-2 right-2 z-20 px-2 py-1 rounded-md bg-red-600 hover:bg-red-500 text-[10px] font-bold text-white shadow">Delete</button>` : ''}
+            <div class="aspect-[2/3] w-full overflow-hidden bg-zinc-950 relative">
+              ${generatePosterSVG(movie)}
             </div>
-            <div class="flex items-center justify-between pt-2 border-t border-zinc-800/80 text-[11px] text-zinc-400">
-              <span>${movie.year || 2026}</span>
-              <span class="text-rose-400 font-semibold">Download →</span>
+            <div class="p-3.5 flex-1 flex flex-col justify-between space-y-2">
+              <div>
+                <h3 class="font-bold text-sm text-zinc-100 group-hover:text-rose-400 transition line-clamp-2 leading-snug">
+                  ${movie.title}
+                </h3>
+                <p class="text-[11px] text-zinc-400 mt-1 line-clamp-1">${movie.audio || 'Dual Audio'}</p>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-zinc-800/80 text-[11px] text-zinc-400">
+                <span>${movie.year || 2026}</span>
+                <span class="text-rose-400 font-semibold">Download →</span>
+              </div>
             </div>
           </div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
     }
 
     function openMovieModal(id) {
@@ -457,6 +518,7 @@
     }
 
     function openAddModal() {
+      if (!isAdmin) return;
       const modal = document.getElementById("addModal");
       modal.classList.remove("hidden");
       modal.classList.add("flex");
@@ -477,7 +539,6 @@
       selectCategory("All");
     }
 
-    // Load Movies from Supabase
     async function fetchSupabaseMovies() {
       const statusEl = document.getElementById("dbStatus");
       try {
@@ -501,22 +562,24 @@
             links: row.download_links || []
           }));
           allMovies = [...formatted, ...SAMPLE_MOVIES];
+        } else {
+          allMovies = [...SAMPLE_MOVIES];
         }
-        statusEl.textContent = "● Supabase Live";
+        statusEl.textContent = "● Online";
         statusEl.className = "text-xs text-emerald-400 font-medium";
       } catch (err) {
-        console.error("Supabase fetch error:", err);
-        statusEl.textContent = "● Offline Preview Mode";
-        statusEl.className = "text-xs text-amber-400 font-medium";
+        statusEl.textContent = "● Preview";
+        statusEl.className = "text-xs text-zinc-500 font-medium";
       }
       filterAndRender();
     }
 
-    // Add New Movie to Supabase
     document.getElementById("addMovieForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (!isAdmin) return;
+
       const btn = document.getElementById("submitBtn");
-      btn.textContent = "Saving to Supabase...";
+      btn.textContent = "Publishing...";
       btn.disabled = true;
 
       const title = document.getElementById("inTitle").value.trim();
@@ -542,11 +605,11 @@
 
       const { error } = await supabaseClient.from('movies').insert([payload]);
 
-      btn.textContent = "Save & Publish to Supabase";
+      btn.textContent = "Publish Movie";
       btn.disabled = false;
 
       if (error) {
-        alert("Error saving movie: " + error.message);
+        alert("Error: " + error.message);
         return;
       }
 
@@ -555,14 +618,13 @@
       await fetchSupabaseMovies();
     });
 
-    // Event Listeners
     document.getElementById("searchInput").addEventListener("input", filterAndRender);
     document.getElementById("mobileSearchInput").addEventListener("input", filterAndRender);
     document.getElementById("qualityFilter").addEventListener("change", filterAndRender);
     document.getElementById("audioFilter").addEventListener("change", filterAndRender);
 
-    // Init
     renderCategories();
+    checkAdminSession();
     fetchSupabaseMovies();
   </script>
 </body>
