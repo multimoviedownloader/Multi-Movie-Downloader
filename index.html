@@ -437,13 +437,12 @@
       </form>
     </div>
   </div>
-
   <script>
     const SUPABASE_URL = 'https://brpyyaclataxkdgkbskt.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Adsterra Smartlink + GPLinks API + 0s Cooldown + 5s Countdown
+    // Adsterra Smartlink + GPLinks API + 0s Cooldown + 10s Countdown
     const AD_DIRECT_LINK = "https://directyp.org/4/d9045b5a2f84f9ecfd07f8178384aea5";
     const GPLINKS_API_TOKEN = "a0096b12cfdda7690d872b7d985e1194c55d6575";
     const AD_COOLDOWN_SECONDS = 0;
@@ -484,9 +483,8 @@
     let countdownInterval = null;
     let currentDirectUrl = "";
 
-        // ==================== DEDICATED DOWNLOAD PAGE LOGIC ====================
+    // ==================== DEDICATED DOWNLOAD PAGE LOGIC ====================
     function openDownloadPage(movieId, linkIndex) {
-      triggerAdCooldown();
       const movie = allMovies.find(m => String(m.id) === String(movieId));
       if (!movie) return;
 
@@ -509,8 +507,10 @@
       document.getElementById("dlPageQuality").textContent = linkObj.label || movie.quality || "1080p HD";
       document.getElementById("dlPageSize").textContent = linkObj.size || "High-Speed Cloud";
       document.getElementById("dlPageAudio").textContent = movie.audio || "Dual Audio";
-      document.getElementById("dlFinalBtn").href = AD_DIRECT_LINK || finalDownloadUrl;
-      document.getElementById("dlFinalBtn").onclick = function() {
+
+      const dlBtn = document.getElementById("dlFinalBtn");
+      dlBtn.href = AD_DIRECT_LINK || finalDownloadUrl;
+      dlBtn.onclick = function() {
         if (AD_DIRECT_LINK) {
           setTimeout(() => { window.location.href = finalDownloadUrl; }, 300);
         }
@@ -780,9 +780,11 @@
       }).join("");
     }
 
-        function openMovieModal(id) {
+    function openMovieModal(id) {
       const movie = allMovies.find(m => String(m.id) === String(id));
       if (!movie) return;
+
+      triggerAdCooldown();
 
       document.getElementById("modalPoster").innerHTML = generatePosterSVG(movie);
       document.getElementById("modalCategory").textContent = movie.category || "Movie";
@@ -1027,6 +1029,7 @@
     checkAdminSession();
     fetchSupabaseMovies();
   </script>
+
 
   <!-- Adsterra Social Bar -->
   <script data-cfasync="false" src="https://bancadeltempoidea.org/14/03b79d482859b25e7f7c43820f1a340d"></script>
