@@ -777,11 +777,9 @@
       }).join("");
     }
 
-    function openMovieModal(id) {
+        function openMovieModal(id) {
       const movie = allMovies.find(m => String(m.id) === String(id));
       if (!movie) return;
-
-      triggerAdCooldown();
 
       document.getElementById("modalPoster").innerHTML = generatePosterSVG(movie);
       document.getElementById("modalCategory").textContent = movie.category || "Movie";
