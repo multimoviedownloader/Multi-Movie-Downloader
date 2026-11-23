@@ -389,7 +389,7 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Adsterra Smartlink + 60s Cooldown + 5s Countdown
+    // Adsterra Smartlink + 0s Cooldown + 5s Countdown
     const AD_DIRECT_LINK = "https://directyp.org/4/66ef8a3903da8775f7869cc14b872f71";
     const AD_COOLDOWN_SECONDS = 0;
     const DOWNLOAD_WAIT_SECONDS = 5;
@@ -427,12 +427,8 @@
       const linkObj = downloadItems[linkIndex] || downloadItems[0];
       if (!linkObj) return;
 
-                  closeMovieModal();
-      triggerAdCooldown();
-
+      closeMovieModal();
       currentDirectUrl = linkObj.url;
-
-
 
       document.getElementById("dlPagePoster").innerHTML = generatePosterSVG(movie);
       document.getElementById("dlPageTitle").textContent = movie.title;
@@ -750,15 +746,11 @@
                 <button onclick="startStreamPlayer('${l.url}')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow transition">
                   ▶ Watch
                 </button>` : ''}
-                            <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
+              <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
                  onclick="openDownloadPage('${movie.id}', ${idx})"
                  class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition inline-block">
                 ⬇ Direct Download
               </a>
-
-                 class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition">
-                ⬇ Direct Download
-              </button>
             </div>
           </div>
         `;
