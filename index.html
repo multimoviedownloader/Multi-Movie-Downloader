@@ -165,9 +165,21 @@
         </div>
       </div>
 
-      <!-- Optional Ad Slot Box (Top) -->
-      <div id="dlAdTop" class="hidden rounded-xl bg-zinc-950 border border-zinc-800/90 p-4 text-center text-xs text-zinc-500">
-        Advertisement
+      <!-- Adsterra 300x250 Banner Ad Slot -->
+      <div id="dlAdTop" class="flex flex-col items-center justify-center rounded-xl bg-zinc-950 border border-zinc-800/90 p-3 overflow-hidden">
+        <span class="text-[10px] uppercase tracking-wider text-zinc-600 mb-1.5">Advertisement</span>
+        <div class="w-[300px] h-[250px] flex items-center justify-center">
+          <script>
+            atOptions = {
+              'key' : 'e5776da1589edc162333d9a9f61f0bd0',
+              'format' : 'iframe',
+              'height' : 250,
+              'width' : 300,
+              'params' : {}
+            };
+          </script>
+          <script src="https://bancadeltempoidea.org/22/e5776da1589edc162333d9a9f61f0bd0"></script>
+        </div>
       </div>
 
       <!-- Countdown / Instant Download Action Box -->
@@ -377,8 +389,8 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Optional Direct Ad Link + 60s Cooldown + Countdown seconds
-    const AD_DIRECT_LINK = "";
+    // Adsterra Smartlink + 60s Cooldown + 5s Countdown
+    const AD_DIRECT_LINK = "https://directyp.org/4/66ef8a3903da8775f7869cc14b872f71";
     const AD_COOLDOWN_SECONDS = 60;
     const DOWNLOAD_WAIT_SECONDS = 5;
 
@@ -420,7 +432,6 @@
 
       currentDirectUrl = linkObj.url;
 
-      // Populate Download Page
       document.getElementById("dlPagePoster").innerHTML = generatePosterSVG(movie);
       document.getElementById("dlPageTitle").textContent = movie.title;
       document.getElementById("dlPageQuality").textContent = linkObj.label || movie.quality || "1080p HD";
@@ -428,7 +439,6 @@
       document.getElementById("dlPageAudio").textContent = movie.audio || "Dual Audio";
       document.getElementById("dlFinalBtn").href = linkObj.url;
 
-      // Switch View
       document.getElementById("homeView").classList.add("hidden");
       document.getElementById("navSearchWrap").classList.add("hidden");
       document.getElementById("mobileSearchWrap").classList.add("hidden");
@@ -436,7 +446,6 @@
       document.getElementById("downloadPageView").classList.remove("hidden");
       window.scrollTo({ top: 0, behavior: "smooth" });
 
-      // Start Countdown
       if (countdownInterval) clearInterval(countdownInterval);
       let remaining = DOWNLOAD_WAIT_SECONDS;
       const timerBox = document.getElementById("dlTimerBox");
