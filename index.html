@@ -25,7 +25,7 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-rose-500 selection:text-white">
 
-  <!-- Secret Admin Top Bar (Hidden for Public Users) -->
+  <!-- Secret Admin Top Bar -->
   <div id="adminBar" class="hidden bg-rose-950/90 border-b border-rose-500/40 px-4 py-2 text-xs">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
       <div class="flex items-center gap-2 text-rose-200 font-semibold">
@@ -147,7 +147,7 @@
     </div>
   </footer>
 
-  <!-- Movie Details, Screenshots, Player & Download Modal -->
+  <!-- Movie Details Modal -->
   <div id="movieModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
     <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
       <div class="relative p-6 sm:p-7">
@@ -202,7 +202,7 @@
     <img id="lightboxImg" src="" alt="Full Screenshot" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl" />
   </div>
 
-  <!-- Secret Admin Login Modal (#admin) -->
+  <!-- Secret Admin Login Modal -->
   <div id="adminLoginModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4">
     <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
       <div class="flex items-center justify-between mb-4">
@@ -223,17 +223,18 @@
     </div>
   </div>
 
-  <!-- Admin Add Movie Modal (Multi-Quality + Screenshots Support) -->
+  <!-- Admin Add / Edit Movie Modal -->
   <div id="addModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
     <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-white">Publish New Movie</h3>
+        <h3 id="addModalHeading" class="text-lg font-bold text-white">Publish New Movie</h3>
         <button onclick="closeAddModal()" class="w-8 h-8 rounded-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700">✕</button>
       </div>
       <form id="addMovieForm" class="space-y-3.5 text-sm">
+        <input type="hidden" id="editMovieId" value="" />
         <div>
           <label class="block text-xs text-zinc-400 mb-1">Movie / Series Title *</label>
-          <input required id="inTitle" type="text" placeholder="e.g. Kalki 2898 AD (2024)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
+          <input required id="inTitle" type="text" placeholder="e.g. Ramayana (2026)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -271,28 +272,22 @@
           </div>
         </div>
         <div>
-          <label class="block text-xs text-zinc-400 mb-1">Poster Image URL (Optional)</label>
-          <input id="inPoster" type="url" placeholder="https://image.tmdb.org/t/p/w500/..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
+          <label class="block text-xs text-zinc-400 mb-1">Direct Poster Image URL (Must end with .jpg / .png / .webp)</label>
+          <input id="inPoster" type="url" placeholder="https://i.ibb.co/xxxxxxx/poster.jpg" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
         </div>
 
         <!-- Multi-Quality Telegram Bot Links -->
         <div class="space-y-2 pt-1">
           <div class="flex items-center justify-between">
-            <label class="block text-xs font-semibold text-zinc-300">Download / Stream Links (Telegram Bot URLs) *</label>
+            <label class="block text-xs font-semibold text-zinc-300">Download / Stream Links *</label>
             <button type="button" onclick="addLinkRow()" class="text-xs font-bold text-rose-400 hover:text-rose-300">+ Add Quality</button>
           </div>
-          <div id="linkInputsWrap" class="space-y-2">
-            <div class="grid grid-cols-12 gap-2 link-input-row">
-              <input type="text" value="1080p Full HD" placeholder="Quality" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-label" />
-              <input type="text" placeholder="Size (e.g. 1.8 GB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-size" />
-              <input required type="url" placeholder="https://tgfilestream-7smz.onrender.com/..." class="col-span-5 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-url" />
-            </div>
-          </div>
+          <div id="linkInputsWrap" class="space-y-2"></div>
         </div>
 
         <div>
-          <label class="block text-xs text-zinc-400 mb-1">Screenshots URLs (Comma separated, Optional)</label>
-          <input id="inScreenshots" type="text" placeholder="https://img1.jpg, https://img2.jpg" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
+          <label class="block text-xs text-zinc-400 mb-1">Direct Screenshots URLs (Comma separated, Optional)</label>
+          <input id="inScreenshots" type="text" placeholder="https://i.ibb.co/.../1.jpg, https://i.ibb.co/.../2.jpg" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
         </div>
         <div>
           <label class="block text-xs text-zinc-400 mb-1">Short Description</label>
@@ -308,7 +303,6 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Optional Direct Ad Link + 60s Cooldown (Leave "" if no ad)
     const AD_DIRECT_LINK = "";
     const AD_COOLDOWN_SECONDS = 60;
 
@@ -400,17 +394,55 @@
       modal.classList.remove("flex");
     }
 
-    function addLinkRow() {
+    function addLinkRow(labelVal = "", sizeVal = "", urlVal = "", isFirst = false) {
       const wrap = document.getElementById("linkInputsWrap");
       const row = document.createElement("div");
       row.className = "grid grid-cols-12 gap-2 link-input-row";
       row.innerHTML = `
-        <input type="text" placeholder="720p HD" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-label" />
-        <input type="text" placeholder="850 MB" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-size" />
-        <input type="url" placeholder="https://tgfilestream..." class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-url" />
-        <button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>
+        <input type="text" value="${labelVal}" placeholder="1080p / 720p" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-label" />
+        <input type="text" value="${sizeVal}" placeholder="Size (1.8 GB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-size" />
+        <input ${isFirst ? 'required' : ''} type="url" value="${urlVal}" placeholder="https://tgfilestream..." class="${isFirst ? 'col-span-5' : 'col-span-4'} bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-url" />
+        ${isFirst ? '' : '<button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>'}
       `;
       wrap.appendChild(row);
+    }
+
+    function openEditModal(event, id) {
+      event.stopPropagation();
+      const movie = allMovies.find(m => String(m.id) === String(id));
+      if (!movie || !isAdmin) return;
+
+      document.getElementById("editMovieId").value = movie.id;
+      document.getElementById("addModalHeading").textContent = "Edit Movie";
+      document.getElementById("submitBtn").textContent = "Save Changes";
+
+      document.getElementById("inTitle").value = movie.title || "";
+      document.getElementById("inCategory").value = movie.category || "Bollywood";
+      document.getElementById("inYear").value = movie.year || 2026;
+      document.getElementById("inAudio").value = movie.audio || "";
+      document.getElementById("inQuality").value = movie.quality || "1080p WEB-DL";
+      document.getElementById("inPoster").value = movie.poster_url || "";
+      document.getElementById("inDesc").value = movie.desc || "";
+
+      const rawLinks = Array.isArray(movie.links) ? movie.links : [];
+      const downloadItems = rawLinks.filter(item => item && item.url);
+      const screenshotUrls = rawLinks.filter(item => item && item.screenshot).map(item => item.screenshot);
+
+      document.getElementById("inScreenshots").value = screenshotUrls.join(", ");
+
+      const wrap = document.getElementById("linkInputsWrap");
+      wrap.innerHTML = "";
+      if (downloadItems.length > 0) {
+        downloadItems.forEach((item, idx) => {
+          addLinkRow(item.label || "", item.size || "", item.url || "", idx === 0);
+        });
+      } else {
+        addLinkRow("1080p Full HD", "", "", true);
+      }
+
+      const modal = document.getElementById("addModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
     }
 
     async function deleteMovie(event, id) {
@@ -497,10 +529,15 @@
 
       empty.classList.add("hidden");
       grid.innerHTML = filtered.map(movie => {
-        const canDelete = isAdmin && !String(movie.id).startsWith("sample-");
+        const canManage = isAdmin && !String(movie.id).startsWith("sample-");
         return `
           <div onclick="openMovieModal('${movie.id}')" class="movie-card group cursor-pointer bg-zinc-900/80 border border-zinc-800/90 hover:border-rose-500/50 rounded-2xl overflow-hidden flex flex-col transition shadow-lg relative">
-            ${canDelete ? `<button onclick="deleteMovie(event, '${movie.id}')" class="absolute top-2 right-2 z-20 px-2 py-1 rounded-md bg-red-600 hover:bg-red-500 text-[10px] font-bold text-white shadow">Delete</button>` : ''}
+            ${canManage ? `
+              <div class="absolute top-2 right-2 z-20 flex gap-1.5">
+                <button onclick="openEditModal(event, '${movie.id}')" class="px-2 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-[10px] font-bold text-white shadow">Edit</button>
+                <button onclick="deleteMovie(event, '${movie.id}')" class="px-2 py-1 rounded-md bg-red-600 hover:bg-red-500 text-[10px] font-bold text-white shadow">Delete</button>
+              </div>
+            ` : ''}
             <div class="aspect-[2/3] w-full overflow-hidden bg-zinc-950 relative">
               ${generatePosterSVG(movie)}
             </div>
@@ -533,7 +570,6 @@
       document.getElementById("modalAudio").textContent = `Audio: ${movie.audio || 'Dual Audio'}`;
       document.getElementById("modalDesc").textContent = movie.desc || "High-definition digital release ready for direct download.";
 
-      // Parse links & screenshots safely from download_links
       const rawLinks = Array.isArray(movie.links) ? movie.links : [];
       const downloadItems = rawLinks.filter(item => item && item.url);
       const screenshotUrls = movie.screenshots || rawLinks.filter(item => item && item.screenshot).map(item => item.screenshot);
@@ -554,7 +590,7 @@
         : [{ label: movie.quality || "1080p Direct", size: "Direct Link", url: "#" }];
 
       document.getElementById("modalLinks").innerHTML = links.map(l => {
-        const isDirectVideo = /\.(mp4|mkv|webm)(\?|$)/i.test(l.url) || l.url.includes("onrender.com");
+        const isDirectVideo = /\.(mp4|webm)(\?|$)/i.test(l.url);
         return `
           <div class="flex flex-wrap items-center justify-between gap-2 p-3.5 rounded-xl bg-zinc-950 border border-zinc-800">
             <div>
@@ -615,6 +651,13 @@
 
     function openAddModal() {
       if (!isAdmin) return;
+      document.getElementById("addMovieForm").reset();
+      document.getElementById("editMovieId").value = "";
+      document.getElementById("addModalHeading").textContent = "Publish New Movie";
+      document.getElementById("submitBtn").textContent = "Publish Movie";
+      document.getElementById("linkInputsWrap").innerHTML = "";
+      addLinkRow("1080p Full HD", "", "", true);
+
       const modal = document.getElementById("addModal");
       modal.classList.remove("hidden");
       modal.classList.add("flex");
@@ -674,8 +717,9 @@
       e.preventDefault();
       if (!isAdmin) return;
 
+      const editId = document.getElementById("editMovieId").value.trim();
       const btn = document.getElementById("submitBtn");
-      btn.textContent = "Publishing...";
+      btn.textContent = editId ? "Saving..." : "Publishing...";
       btn.disabled = true;
 
       const title = document.getElementById("inTitle").value.trim();
@@ -685,9 +729,7 @@
       const quality = document.getElementById("inQuality").value;
       const poster_url = document.getElementById("inPoster").value.trim();
       const description = document.getElementById("inDesc").value.trim();
-      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
 
-      // Collect all quality links
       const linkEntries = [];
       document.querySelectorAll(".link-input-row").forEach(row => {
         const label = row.querySelector(".link-label").value.trim() || quality;
@@ -696,7 +738,6 @@
         if (url) linkEntries.push({ label, size, url });
       });
 
-      // Collect optional screenshots into same JSON array
       const ssRaw = document.getElementById("inScreenshots").value.trim();
       if (ssRaw) {
         ssRaw.split(",").map(s => s.trim()).filter(Boolean).forEach(screenshot => {
@@ -706,7 +747,6 @@
 
       const payload = {
         title,
-        slug,
         description,
         poster_url: poster_url || null,
         release_year: year,
@@ -715,9 +755,17 @@
         download_links: linkEntries
       };
 
-      const { error } = await supabaseClient.from('movies').insert([payload]);
+      let error;
+      if (editId) {
+        const res = await supabaseClient.from('movies').update(payload).eq('id', editId);
+        error = res.error;
+      } else {
+        payload.slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
+        const res = await supabaseClient.from('movies').insert([payload]);
+        error = res.error;
+      }
 
-      btn.textContent = "Publish Movie";
+      btn.textContent = editId ? "Save Changes" : "Publish Movie";
       btn.disabled = false;
 
       if (error) {
@@ -725,7 +773,6 @@
         return;
       }
 
-      document.getElementById("addMovieForm").reset();
       closeAddModal();
       await fetchSupabaseMovies();
     });
