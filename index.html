@@ -140,17 +140,16 @@
         <button onclick="resetFilters()" class="mt-3 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-sm text-white transition">Reset Filters</button>
       </div>
     </main>
-  </div>
 
-  <!-- Adsterra Native Banner -->
-<div class="max-w-7xl mx-auto px-4 my-8">
-  <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-3">
-    <p class="text-[10px] uppercase tracking-wider text-zinc-500 text-center mb-2">Sponsored Recommendations</p>
-    <script async="async" data-cfasync="false" src="https://bancadeltempoidea.org/21/eb0498fd1dcc5b02878250d440c1c6c1"></script>
-    <div id="container-eb0498fd1dcc5b02878250d440c1c6c1"></div>
+    <!-- Adsterra Native Banner (Inside homeView so it only shows on homepage) -->
+    <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+      <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-3">
+        <p class="text-[10px] uppercase tracking-wider text-zinc-500 text-center mb-2">Sponsored Recommendations</p>
+        <script async fetchpriority="high" data-cfasync="false" src="https://bancadeltempoidea.org/21/caa60384009420b2a7759f3c58f89301"></script>
+        <div id="container-caa60384009420b2a7759f3c58f89301"></div>
+      </div>
+    </div>
   </div>
-</div>
-  
 
   <!-- ==================== DEDICATED INSTANT DOWNLOAD PAGE VIEW ==================== -->
   <div id="downloadPageView" class="hidden flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
@@ -181,14 +180,14 @@
         <div class="w-[300px] h-[250px] flex items-center justify-center">
           <script>
             atOptions = {
-              'key' : 'e5776da1589edc162333d9a9f61f0bd0',
+              'key' : 'b062c3830e5e7a2a72f7782f37071b08',
               'format' : 'iframe',
               'height' : 250,
               'width' : 300,
               'params' : {}
             };
           </script>
-          <script src="https://bancadeltempoidea.org/22/e5776da1589edc162333d9a9f61f0bd0"></script>
+          <script data-cfasync="false" src="https://bancadeltempoidea.org/22/b062c3830e5e7a2a72f7782f37071b08"></script>
         </div>
       </div>
 
@@ -400,7 +399,7 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Adsterra Smartlink + 0s Cooldown + 5s Countdown
-    const AD_DIRECT_LINK = "https://directyp.org/4/66ef8a3903da8775f7869cc14b872f71";
+    const AD_DIRECT_LINK = "https://directyp.org/4/d9045b5a2f84f9ecfd07f8178384aea5";
     const AD_COOLDOWN_SECONDS = 0;
     const DOWNLOAD_WAIT_SECONDS = 5;
 
@@ -446,11 +445,11 @@
       document.getElementById("dlPageSize").textContent = linkObj.size || "High-Speed Cloud";
       document.getElementById("dlPageAudio").textContent = movie.audio || "Dual Audio";
       document.getElementById("dlFinalBtn").href = AD_DIRECT_LINK || linkObj.url;
-document.getElementById("dlFinalBtn").onclick = function() {
-  if (AD_DIRECT_LINK) {
-    setTimeout(() => { window.location.href = linkObj.url; }, 300);
-  }
-};
+      document.getElementById("dlFinalBtn").onclick = function() {
+        if (AD_DIRECT_LINK) {
+          setTimeout(() => { window.location.href = linkObj.url; }, 300);
+        }
+      };
 
       document.getElementById("homeView").classList.add("hidden");
       document.getElementById("navSearchWrap").classList.add("hidden");
@@ -915,7 +914,7 @@ document.getElementById("dlFinalBtn").onclick = function() {
         download_links: linkEntries
       };
 
-            let error;
+      let error;
       if (editId) {
         const res = await supabaseClient.from('movies').update(payload).eq('id', editId);
         error = res.error;
@@ -939,7 +938,6 @@ document.getElementById("dlFinalBtn").onclick = function() {
         }
       }
 
-
       btn.textContent = editId ? "Save Changes" : "Publish Movie";
       btn.disabled = false;
 
@@ -962,8 +960,7 @@ document.getElementById("dlFinalBtn").onclick = function() {
     fetchSupabaseMovies();
   </script>
 
-<!-- Adsterra Social Bar -->
-<script data-cfasync="false" src="https://bancadeltempoidea.org/14/3ce73342ff72bd129941762b7862a6cb"></script>
-  
+  <!-- Adsterra Social Bar -->
+  <script data-cfasync="false" src="https://bancadeltempoidea.org/14/03b79d482859b25e7f7c43820f1a340d"></script>
 </body>
 </html>
