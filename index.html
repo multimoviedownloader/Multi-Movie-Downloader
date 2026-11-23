@@ -321,27 +321,12 @@
       "Anime", "Public Domain Classics", "Action", "Sci-Fi", "Thriller"
     ];
 
-    const SAMPLE_MOVIES = [
-      {
-        id: "sample-1",
-        title: "Night of the Living Dead (Remastered)",
-        year: 1968,
-        category: "Public Domain Classics",
-        quality: "1080p",
-        audio: "English + Hindi Dub",
-        rating: "7.8",
-        gradient: ["#9f1239", "#18181b"],
-        desc: "George A. Romero's iconic horror classic restored in crisp high definition from archival 35mm prints.",
-        links: [
-          { label: "720p HD", size: "890 MB", url: "https://archive.org/details/night_of_the_living_dead" },
-          { label: "1080p Full HD", size: "2.1 GB", url: "https://archive.org/details/night_of_the_living_dead" }
-        ]
-      }
-    ];
+        const SAMPLE_MOVIES = [];
 
-    let allMovies = [...SAMPLE_MOVIES];
+    let allMovies = [];
     let activeCategory = "All";
     let isAdmin = false;
+
 
     async function checkAdminSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
