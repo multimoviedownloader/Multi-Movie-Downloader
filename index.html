@@ -47,7 +47,7 @@
   <header class="glass-nav sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 gap-4">
-        <div class="flex items-center gap-2.5 cursor-pointer shrink-0" onclick="resetFilters()">
+        <div class="flex items-center gap-2.5 cursor-pointer shrink-0" onclick="exitDownloadPage(); resetFilters();">
           <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-600/20">
             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
@@ -58,7 +58,7 @@
           </div>
         </div>
 
-        <div class="flex-1 max-w-md hidden sm:block">
+        <div id="navSearchWrap" class="flex-1 max-w-md hidden sm:block">
           <div class="relative">
             <svg class="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -69,75 +69,149 @@
         </div>
       </div>
 
-      <div class="pb-3 sm:hidden">
+      <div id="mobileSearchWrap" class="pb-3 sm:hidden">
         <input id="mobileSearchInput" type="text" placeholder="Search movies, series, genre..."
           class="w-full bg-zinc-900 border border-zinc-800 focus:border-rose-500 rounded-full px-4 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none" />
       </div>
     </div>
 
-    <div class="border-t border-zinc-800/80 bg-zinc-950/60">
+    <div id="categoryNavWrap" class="border-t border-zinc-800/80 bg-zinc-950/60">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div id="categoryTabs" class="flex items-center gap-2 py-2.5 overflow-x-auto no-scrollbar text-xs sm:text-sm font-medium"></div>
       </div>
     </div>
   </header>
 
-  <!-- Featured Hero Banner -->
-  <section class="relative overflow-hidden border-b border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-      <div class="rounded-2xl bg-gradient-to-r from-zinc-900 via-zinc-900/95 to-rose-950/30 border border-zinc-800/90 p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div class="space-y-3 max-w-2xl">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold">
-            <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-            4K UHD • 1080p • 720p • Dual Audio Ready
+  <!-- ==================== HOME VIEW ==================== -->
+  <div id="homeView" class="flex-1 flex flex-col">
+    <!-- Featured Hero Banner -->
+    <section class="relative overflow-hidden border-b border-zinc-800/80 bg-gradient-to-b from-zinc-900/60 to-zinc-950">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <div class="rounded-2xl bg-gradient-to-r from-zinc-900 via-zinc-900/95 to-rose-950/30 border border-zinc-800/90 p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div class="space-y-3 max-w-2xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+              4K UHD • 1080p • 720p • Dual Audio Ready
+            </div>
+            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+              Multi Movie <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-amber-400">Downloader</span>
+            </h1>
+            <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
+              Browse Bollywood, Hollywood, South Indian, Web Series, Anime & Public Domain classics with multi-resolution direct download & online stream mirrors.
+            </p>
           </div>
-          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-            Multi Movie <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-amber-400">Downloader</span>
-          </h1>
-          <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
-            Browse Bollywood, Hollywood, South Indian, Web Series, Anime & Public Domain classics with multi-resolution direct download & online stream mirrors.
+
+          <div class="flex flex-wrap gap-2 shrink-0">
+            <select id="qualityFilter" class="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none focus:border-rose-500">
+              <option value="ALL">All Qualities</option>
+              <option value="4K">4K UHD</option>
+              <option value="1080p">1080p Full HD</option>
+              <option value="720p">720p HD</option>
+              <option value="480p">480p SD</option>
+            </select>
+            <select id="audioFilter" class="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none focus:border-rose-500">
+              <option value="ALL">All Languages</option>
+              <option value="Dual Audio">Dual Audio (Hindi + Eng)</option>
+              <option value="Hindi">Hindi</option>
+              <option value="English">English</option>
+              <option value="South">South Indian</option>
+              <option value="Bengali">Bengali</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Movie Grid -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-2.5">
+          <span class="w-1.5 h-6 rounded-full bg-rose-500"></span>
+          <h2 id="sectionHeading" class="text-lg sm:text-xl font-bold text-white">Latest Releases</h2>
+          <span id="movieCount" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300">0</span>
+        </div>
+        <div id="dbStatus" class="text-xs text-zinc-500 font-medium">Loading...</div>
+      </div>
+
+      <div id="movieGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"></div>
+
+      <div id="emptyState" class="hidden text-center py-20">
+        <p class="text-zinc-400 text-base font-medium">No movies matched your filter.</p>
+        <button onclick="resetFilters()" class="mt-3 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-sm text-white transition">Reset Filters</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== DEDICATED INSTANT DOWNLOAD PAGE VIEW ==================== -->
+  <div id="downloadPageView" class="hidden flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <button onclick="exitDownloadPage()" class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white mb-6 transition">
+      ← Back to Movies
+    </button>
+
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+      <!-- Top File Summary -->
+      <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pb-6 border-b border-zinc-800">
+        <div id="dlPagePoster" class="w-28 h-40 rounded-xl overflow-hidden border border-zinc-700 shrink-0 shadow-lg"></div>
+        <div class="text-center sm:text-left space-y-2 flex-1">
+          <span class="inline-block px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 text-xs font-bold">
+            ✓ Verified High-Speed Telegram Cloud File
+          </span>
+          <h1 id="dlPageTitle" class="text-lg sm:text-2xl font-extrabold text-white leading-snug"></h1>
+          <div class="flex flex-wrap justify-center sm:justify-start gap-2 pt-1 text-xs font-semibold">
+            <span id="dlPageQuality" class="px-3 py-1 rounded-lg bg-rose-600/20 text-rose-400 border border-rose-500/30"></span>
+            <span id="dlPageSize" class="px-3 py-1 rounded-lg bg-zinc-800 text-zinc-200"></span>
+            <span id="dlPageAudio" class="px-3 py-1 rounded-lg bg-zinc-800 text-zinc-300"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Optional Ad Slot Box (Top) -->
+      <div id="dlAdTop" class="hidden rounded-xl bg-zinc-950 border border-zinc-800/90 p-4 text-center text-xs text-zinc-500">
+        Advertisement
+      </div>
+
+      <!-- Countdown / Instant Download Action Box -->
+      <div class="rounded-2xl bg-zinc-950 border border-zinc-800 p-6 text-center space-y-4">
+        <!-- Timer State -->
+        <div id="dlTimerBox" class="space-y-3">
+          <div class="w-14 h-14 mx-auto rounded-full border-4 border-rose-500/30 border-t-rose-500 animate-spin"></div>
+          <p class="text-sm sm:text-base font-bold text-white">
+            Generating Your Instant Download Link...
+          </p>
+          <p class="text-xs text-zinc-400">
+            Please wait <span id="dlCountdownNum" class="text-rose-400 font-extrabold text-sm">5</span> seconds while we connect to the fastest mirror.
           </p>
         </div>
 
-        <div class="flex flex-wrap gap-2 shrink-0">
-          <select id="qualityFilter" class="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none focus:border-rose-500">
-            <option value="ALL">All Qualities</option>
-            <option value="4K">4K UHD</option>
-            <option value="1080p">1080p Full HD</option>
-            <option value="720p">720p HD</option>
-            <option value="480p">480p SD</option>
-          </select>
-          <select id="audioFilter" class="bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none focus:border-rose-500">
-            <option value="ALL">All Languages</option>
-            <option value="Dual Audio">Dual Audio (Hindi + Eng)</option>
-            <option value="Hindi">Hindi</option>
-            <option value="English">English</option>
-            <option value="South">South Indian</option>
-            <option value="Bengali">Bengali</option>
-          </select>
+        <!-- Ready State -->
+        <div id="dlReadyBox" class="hidden space-y-4">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold">
+            ● Direct Server Connected — Max Speed Unlocked
+          </div>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+            <a id="dlFinalBtn" href="#" target="_blank" rel="noopener noreferrer" onclick="triggerAdCooldown()"
+               class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-emerald-600/25 transition flex items-center justify-center gap-2">
+              ⚡ Instant Download
+            </a>
+            <button id="dlCopyBtn" onclick="copyDirectLink()"
+               class="w-full sm:w-auto px-5 py-3.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs sm:text-sm border border-zinc-700 transition">
+              📋 Copy Link (IDM / ADM)
+            </button>
+          </div>
+          <p class="text-[11px] text-zinc-500">
+            Tip: For best download speed and resume support on mobile, paste the copied link into <span class="text-zinc-300 font-semibold">1DM / ADM</span> or Chrome.
+          </p>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Main Movie Grid -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-2.5">
-        <span class="w-1.5 h-6 rounded-full bg-rose-500"></span>
-        <h2 id="sectionHeading" class="text-lg sm:text-xl font-bold text-white">Latest Releases</h2>
-        <span id="movieCount" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300">0</span>
+      <!-- Download Instructions -->
+      <div class="rounded-xl bg-zinc-950/60 border border-zinc-800/80 p-4 text-xs text-zinc-400 space-y-1.5">
+        <p class="font-bold text-zinc-200">How to Download & Play:</p>
+        <p>1. Click <span class="text-emerald-400 font-semibold">Instant Download</span> above to start downloading directly from our cloud server.</p>
+        <p>2. If a file is in <span class="text-zinc-200 font-semibold">.MKV / HEVC</span> format, play it using <span class="text-zinc-200 font-semibold">MX Player</span> or <span class="text-zinc-200 font-semibold">VLC</span> after downloading.</p>
       </div>
-      <div id="dbStatus" class="text-xs text-zinc-500 font-medium">Loading...</div>
     </div>
-
-    <div id="movieGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"></div>
-
-    <div id="emptyState" class="hidden text-center py-20">
-      <p class="text-zinc-400 text-base font-medium">No movies matched your filter.</p>
-      <button onclick="resetFilters()" class="mt-3 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-sm text-white transition">Reset Filters</button>
-    </div>
-  </main>
+  </div>
 
   <!-- Footer -->
   <footer class="border-t border-zinc-800/80 bg-zinc-950 py-8 mt-12">
@@ -303,8 +377,10 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // Optional Direct Ad Link + 60s Cooldown + Countdown seconds
     const AD_DIRECT_LINK = "";
     const AD_COOLDOWN_SECONDS = 60;
+    const DOWNLOAD_WAIT_SECONDS = 5;
 
     function triggerAdCooldown() {
       if (!AD_DIRECT_LINK) return;
@@ -321,13 +397,87 @@
       "Anime", "Public Domain Classics", "Action", "Sci-Fi", "Thriller"
     ];
 
-        const SAMPLE_MOVIES = [];
+    const SAMPLE_MOVIES = [];
 
     let allMovies = [];
     let activeCategory = "All";
     let isAdmin = false;
+    let countdownInterval = null;
+    let currentDirectUrl = "";
 
+    // ==================== DEDICATED DOWNLOAD PAGE LOGIC ====================
+    function openDownloadPage(movieId, linkIndex) {
+      const movie = allMovies.find(m => String(m.id) === String(movieId));
+      if (!movie) return;
 
+      const rawLinks = Array.isArray(movie.links) ? movie.links : [];
+      const downloadItems = rawLinks.filter(item => item && item.url);
+      const linkObj = downloadItems[linkIndex] || downloadItems[0];
+      if (!linkObj) return;
+
+      closeMovieModal();
+      triggerAdCooldown();
+
+      currentDirectUrl = linkObj.url;
+
+      // Populate Download Page
+      document.getElementById("dlPagePoster").innerHTML = generatePosterSVG(movie);
+      document.getElementById("dlPageTitle").textContent = movie.title;
+      document.getElementById("dlPageQuality").textContent = linkObj.label || movie.quality || "1080p HD";
+      document.getElementById("dlPageSize").textContent = linkObj.size || "High-Speed Cloud";
+      document.getElementById("dlPageAudio").textContent = movie.audio || "Dual Audio";
+      document.getElementById("dlFinalBtn").href = linkObj.url;
+
+      // Switch View
+      document.getElementById("homeView").classList.add("hidden");
+      document.getElementById("navSearchWrap").classList.add("hidden");
+      document.getElementById("mobileSearchWrap").classList.add("hidden");
+      document.getElementById("categoryNavWrap").classList.add("hidden");
+      document.getElementById("downloadPageView").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // Start Countdown
+      if (countdownInterval) clearInterval(countdownInterval);
+      let remaining = DOWNLOAD_WAIT_SECONDS;
+      const timerBox = document.getElementById("dlTimerBox");
+      const readyBox = document.getElementById("dlReadyBox");
+      const numEl = document.getElementById("dlCountdownNum");
+
+      timerBox.classList.remove("hidden");
+      readyBox.classList.add("hidden");
+      numEl.textContent = remaining;
+
+      countdownInterval = setInterval(() => {
+        remaining -= 1;
+        if (remaining > 0) {
+          numEl.textContent = remaining;
+        } else {
+          clearInterval(countdownInterval);
+          timerBox.classList.add("hidden");
+          readyBox.classList.remove("hidden");
+        }
+      }, 1000);
+    }
+
+    function exitDownloadPage() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      document.getElementById("downloadPageView").classList.add("hidden");
+      document.getElementById("homeView").classList.remove("hidden");
+      document.getElementById("navSearchWrap").classList.remove("hidden");
+      document.getElementById("mobileSearchWrap").classList.remove("hidden");
+      document.getElementById("categoryNavWrap").classList.remove("hidden");
+    }
+
+    function copyDirectLink() {
+      if (!currentDirectUrl) return;
+      navigator.clipboard.writeText(currentDirectUrl).then(() => {
+        const btn = document.getElementById("dlCopyBtn");
+        btn.textContent = "✓ Link Copied!";
+        setTimeout(() => { btn.textContent = "📋 Copy Link (IDM / ADM)"; }, 2000);
+      });
+    }
+
+    // ==================== ADMIN & DATABASE LOGIC ====================
     async function checkAdminSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       isAdmin = !!session;
@@ -385,7 +535,7 @@
       row.className = "grid grid-cols-12 gap-2 link-input-row";
       row.innerHTML = `
         <input type="text" value="${labelVal}" placeholder="1080p / 720p" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-label" />
-        <input type="text" value="${sizeVal}" placeholder="Size (1.8 GB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-size" />
+        <input type="text" value="${sizeVal}" placeholder="Size (3.43 GB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-size" />
         <input ${isFirst ? 'required' : ''} type="url" value="${urlVal}" placeholder="https://tgfilestream..." class="${isFirst ? 'col-span-5' : 'col-span-4'} bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-url" />
         ${isFirst ? '' : '<button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>'}
       `;
@@ -574,7 +724,7 @@
         ? downloadItems
         : [{ label: movie.quality || "1080p Direct", size: "Direct Link", url: "#" }];
 
-      document.getElementById("modalLinks").innerHTML = links.map(l => {
+      document.getElementById("modalLinks").innerHTML = links.map((l, idx) => {
         const isDirectVideo = /\.(mp4|webm)(\?|$)/i.test(l.url);
         return `
           <div class="flex flex-wrap items-center justify-between gap-2 p-3.5 rounded-xl bg-zinc-950 border border-zinc-800">
@@ -587,10 +737,10 @@
                 <button onclick="startStreamPlayer('${l.url}')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow transition">
                   ▶ Watch
                 </button>` : ''}
-              <a href="${l.url}" target="_blank" rel="noopener noreferrer" onclick="triggerAdCooldown()"
+              <button onclick="openDownloadPage('${movie.id}', ${idx})"
                  class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition">
                 ⬇ Direct Download
-              </a>
+              </button>
             </div>
           </div>
         `;
