@@ -484,8 +484,9 @@
     let countdownInterval = null;
     let currentDirectUrl = "";
 
-    // ==================== DEDICATED DOWNLOAD PAGE LOGIC ====================
+        // ==================== DEDICATED DOWNLOAD PAGE LOGIC ====================
     function openDownloadPage(movieId, linkIndex) {
+      triggerAdCooldown();
       const movie = allMovies.find(m => String(m.id) === String(movieId));
       if (!movie) return;
 
