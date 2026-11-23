@@ -220,7 +220,7 @@
             </button>
           </div>
           <p class="text-[11px] text-zinc-500">
-            Tip: For best download speed and resume support on mobile, paste the copied link into <span class="text-zinc-300 font-semibold">1DM / ADM</span> or Chrome.
+            Tip: Complete the short verification step on the next page to start your high-speed download immediately.
           </p>
         </div>
       </div>
@@ -394,7 +394,7 @@
   </div>
 
   <script>
-        const SUPABASE_URL = 'https://brpyyaclataxkdgkbskt.supabase.co';
+    const SUPABASE_URL = 'https://brpyyaclataxkdgkbskt.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -411,6 +411,18 @@
       if (!last || (now - Number(last)) > AD_COOLDOWN_SECONDS * 1000) {
         localStorage.setItem("mmd_ad_ts", String(now));
         window.open(AD_DIRECT_LINK, "_blank", "noopener,noreferrer");
+      }
+    }
+
+    async function shortenWithGPLinks(longUrl) {
+      if (!GPLINKS_API_TOKEN || !longUrl || /gplinks\./i.test(longUrl)) return longUrl;
+      try {
+        const apiUrl = `https://api.gplinks.com/api?api=${GPLINKS_API_TOKEN}&url=${encodeURIComponent(longUrl)}&format=text`;
+        const res = await fetch(apiUrl);
+        const shortUrl = (await res.text()).trim();
+        return /^https?:\/\//i.test(shortUrl) ? shortUrl : longUrl;
+      } catch (err) {
+        return longUrl;
       }
     }
 
@@ -438,11 +450,13 @@
       if (!linkObj) return;
 
       closeMovieModal();
-      currentDirectUrl = linkObj.url;
+      const rawUrl = linkObj.url.trim();
+      const isAlreadyShortened = /gplinks\./i.test(rawUrl);
+      const finalDownloadUrl = (GPLINKS_API_TOKEN && !isAlreadyShortened && /^https?:\/\//i.test(rawUrl))
+        ? `https://api.gplinks.com/st?api=${GPLINKS_API_TOKEN}&url=${rawUrl}`
+        : rawUrl;
 
-      const finalDownloadUrl = GPLINKS_API_TOKEN
-        ? `https://api.gplinks.com/st?api=${GPLINKS_API_TOKEN}&url=${encodeURIComponent(linkObj.url)}`
-        : linkObj.url;
+      currentDirectUrl = finalDownloadUrl;
 
       document.getElementById("dlPagePoster").innerHTML = generatePosterSVG(movie);
       document.getElementById("dlPageTitle").textContent = movie.title;
@@ -896,12 +910,16 @@
       const description = document.getElementById("inDesc").value.trim();
 
       const linkEntries = [];
-      document.querySelectorAll(".link-input-row").forEach(row => {
+      const rows = Array.from(document.querySelectorAll(".link-input-row"));
+      for (const row of rows) {
         const label = row.querySelector(".link-label").value.trim() || quality;
         const size = row.querySelector(".link-size").value.trim() || "Direct Link";
-        const url = row.querySelector(".link-url").value.trim();
-        if (url) linkEntries.push({ label, size, url });
-      });
+        const rawUrl = row.querySelector(".link-url").value.trim();
+        if (rawUrl) {
+          const url = await shortenWithGPLinks(rawUrl);
+          linkEntries.push({ label, size, url });
+        }
+      }
 
       const ssRaw = document.getElementById("inScreenshots").value.trim();
       if (ssRaw) {
