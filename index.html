@@ -391,7 +391,7 @@
 
     // Adsterra Smartlink + 60s Cooldown + 5s Countdown
     const AD_DIRECT_LINK = "https://directyp.org/4/66ef8a3903da8775f7869cc14b872f71";
-    const AD_COOLDOWN_SECONDS = 10;
+    const AD_COOLDOWN_SECONDS = 0;
     const DOWNLOAD_WAIT_SECONDS = 5;
 
     function triggerAdCooldown() {
@@ -705,6 +705,8 @@
     function openMovieModal(id) {
       const movie = allMovies.find(m => String(m.id) === String(id));
       if (!movie) return;
+
+      triggerAdCooldown();
 
       document.getElementById("modalPoster").innerHTML = generatePosterSVG(movie);
       document.getElementById("modalCategory").textContent = movie.category || "Movie";
