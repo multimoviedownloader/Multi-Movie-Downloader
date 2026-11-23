@@ -394,12 +394,13 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://brpyyaclataxkdgkbskt.supabase.co';
+        const SUPABASE_URL = 'https://brpyyaclataxkdgkbskt.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Adsterra Smartlink + 0s Cooldown + 5s Countdown
+    // Adsterra Smartlink + GPLinks API + 0s Cooldown + 5s Countdown
     const AD_DIRECT_LINK = "https://directyp.org/4/d9045b5a2f84f9ecfd07f8178384aea5";
+    const GPLINKS_API_TOKEN = "a0096b12cfdda7690d872b7d985e1194c55d6575";
     const AD_COOLDOWN_SECONDS = 0;
     const DOWNLOAD_WAIT_SECONDS = 5;
 
@@ -439,17 +440,22 @@
       closeMovieModal();
       currentDirectUrl = linkObj.url;
 
+      const finalDownloadUrl = GPLINKS_API_TOKEN
+        ? `https://api.gplinks.com/st?api=${GPLINKS_API_TOKEN}&url=${encodeURIComponent(linkObj.url)}`
+        : linkObj.url;
+
       document.getElementById("dlPagePoster").innerHTML = generatePosterSVG(movie);
       document.getElementById("dlPageTitle").textContent = movie.title;
       document.getElementById("dlPageQuality").textContent = linkObj.label || movie.quality || "1080p HD";
       document.getElementById("dlPageSize").textContent = linkObj.size || "High-Speed Cloud";
       document.getElementById("dlPageAudio").textContent = movie.audio || "Dual Audio";
-      document.getElementById("dlFinalBtn").href = AD_DIRECT_LINK || linkObj.url;
+      document.getElementById("dlFinalBtn").href = AD_DIRECT_LINK || finalDownloadUrl;
       document.getElementById("dlFinalBtn").onclick = function() {
         if (AD_DIRECT_LINK) {
-          setTimeout(() => { window.location.href = linkObj.url; }, 300);
+          setTimeout(() => { window.location.href = finalDownloadUrl; }, 300);
         }
       };
+      document.getElementById("dlCopyBtn").classList.add("hidden");
 
       document.getElementById("homeView").classList.add("hidden");
       document.getElementById("navSearchWrap").classList.add("hidden");
