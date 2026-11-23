@@ -427,9 +427,11 @@
       const linkObj = downloadItems[linkIndex] || downloadItems[0];
       if (!linkObj) return;
 
-            closeMovieModal();
+                  closeMovieModal();
+      triggerAdCooldown();
 
       currentDirectUrl = linkObj.url;
+
 
 
       document.getElementById("dlPagePoster").innerHTML = generatePosterSVG(movie);
@@ -748,7 +750,12 @@
                 <button onclick="startStreamPlayer('${l.url}')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow transition">
                   ▶ Watch
                 </button>` : ''}
-              <button onclick="openDownloadPage('${movie.id}', ${idx})"
+                            <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
+                 onclick="openDownloadPage('${movie.id}', ${idx})"
+                 class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition inline-block">
+                ⬇ Direct Download
+              </a>
+
                  class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition">
                 ⬇ Direct Download
               </button>
