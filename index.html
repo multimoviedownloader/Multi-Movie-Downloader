@@ -435,7 +435,12 @@
       document.getElementById("dlPageQuality").textContent = linkObj.label || movie.quality || "1080p HD";
       document.getElementById("dlPageSize").textContent = linkObj.size || "High-Speed Cloud";
       document.getElementById("dlPageAudio").textContent = movie.audio || "Dual Audio";
-      document.getElementById("dlFinalBtn").href = linkObj.url;
+      document.getElementById("dlFinalBtn").href = AD_DIRECT_LINK || linkObj.url;
+document.getElementById("dlFinalBtn").onclick = function() {
+  if (AD_DIRECT_LINK) {
+    setTimeout(() => { window.location.href = linkObj.url; }, 300);
+  }
+};
 
       document.getElementById("homeView").classList.add("hidden");
       document.getElementById("navSearchWrap").classList.add("hidden");
