@@ -905,7 +905,7 @@ document.getElementById("dlFinalBtn").onclick = function() {
         download_links: linkEntries
       };
 
-      let error;
+            let error;
       if (editId) {
         const res = await supabaseClient.from('movies').update(payload).eq('id', editId);
         error = res.error;
@@ -913,7 +913,22 @@ document.getElementById("dlFinalBtn").onclick = function() {
         payload.slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
         const res = await supabaseClient.from('movies').insert([payload]);
         error = res.error;
+
+        if (!error) {
+          await supabaseClient.functions.invoke('telegram-post', {
+            body: {
+              title,
+              year,
+              category,
+              quality,
+              audio,
+              poster_url: poster_url || null,
+              site_url: window.location.origin
+            }
+          });
+        }
       }
+
 
       btn.textContent = editId ? "Save Changes" : "Publish Movie";
       btn.disabled = false;
