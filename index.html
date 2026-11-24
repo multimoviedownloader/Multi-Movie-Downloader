@@ -412,6 +412,10 @@
           </div>
         </div>
         <div>
+          <label class="block text-xs text-zinc-400 mb-1">Pin Order (Optional — 1 = First, 2 = Second, Leave blank for normal)</label>
+          <input id="inPinOrder" type="number" min="1" placeholder="e.g. 1" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
+        </div>
+        <div>
           <label class="block text-xs text-zinc-400 mb-1">Direct Poster Image URL (Must end with .jpg / .png / .webp)</label>
           <input id="inPoster" type="url" placeholder="https://i.ibb.co/xxxxxxx/poster.jpg" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
         </div>
@@ -651,6 +655,7 @@
       document.getElementById("inReleaseDate").value = movie.release_date || `${movie.year || 2026}-01-01`;
       document.getElementById("inAudio").value = movie.audio || "";
       document.getElementById("inQuality").value = movie.quality || "1080p WEB-DL";
+      document.getElementById("inPinOrder").value = movie.pin_order || "";
       document.getElementById("inPoster").value = movie.poster_url || "";
       document.getElementById("inDesc").value = movie.desc || "";
 
@@ -681,6 +686,26 @@
       const { error } = await supabaseClient.from('movies').delete().eq('id', id);
       if (error) {
         alert("Delete failed: " + error.message);
+        return;
+      }
+      await fetchSupabaseMovies();
+    }
+
+    async function quickPinMovie(event, id) {
+      event.stopPropagation();
+      const movie = allMovies.find(m => String(m.id) === String(id));
+      if (!movie || !isAdmin) return;
+
+      const input = prompt(`Enter pin position for "${movie.title}" (1 = first, 2 = second, leave empty to unpin):`, movie.pin_order || "");
+      if (input === null) return;
+
+      const pinNum = parseInt(input.trim(), 10);
+      const pinStr = (!isNaN(pinNum) && pinNum > 0) ? String(pinNum) : "";
+      const updatedGenre = [movie.category, movie.audio, movie.release_date || "", pinStr];
+
+      const { error } = await supabaseClient.from('movies').update({ genre: updatedGenre }).eq('id', id);
+      if (error) {
+        alert("Pin failed: " + error.message);
         return;
       }
       await fetchSupabaseMovies();
@@ -746,6 +771,9 @@
         const matchAud = aud === "ALL" || (m.audio && m.audio.toLowerCase().includes(aud.toLowerCase()));
         return matchCat && matchSearch && matchQual && matchAud;
       }).sort((a, b) => {
+        if (a.pin_order && b.pin_order) return a.pin_order - b.pin_order;
+        if (a.pin_order) return -1;
+        if (b.pin_order) return 1;
         const timeA = new Date((a.release_date || `${a.year || 2000}-01-01`) + "T00:00:00").getTime() || 0;
         const timeB = new Date((b.release_date || `${b.year || 2000}-01-01`) + "T00:00:00").getTime() || 0;
         return timeB - timeA;
@@ -768,6 +796,7 @@
           <div onclick="openMovieModal('${movie.id}')" class="movie-card group cursor-pointer bg-zinc-900/80 border border-zinc-800/90 hover:border-rose-500/50 rounded-2xl overflow-hidden flex flex-col transition shadow-lg relative">
             ${canManage ? `
               <div class="absolute top-2 right-2 z-20 flex gap-1.5">
+                <button onclick="quickPinMovie(event, '${movie.id}')" class="px-2 py-1 rounded-md ${movie.pin_order ? 'bg-amber-500 text-black' : 'bg-zinc-800/90 text-white'} text-[10px] font-extrabold shadow">📌${movie.pin_order || ''}</button>
                 <button onclick="openEditModal(event, '${movie.id}')" class="px-2 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-[10px] font-bold text-white shadow">Edit</button>
                 <button onclick="deleteMovie(event, '${movie.id}')" class="px-2 py-1 rounded-md bg-red-600 hover:bg-red-500 text-[10px] font-bold text-white shadow">Delete</button>
               </div>
@@ -929,6 +958,7 @@
         if (data && data.length > 0) {
           const formatted = data.map(row => {
             const relDate = Array.isArray(row.genre) && row.genre[2] ? row.genre[2] : "";
+            const pinRaw = Array.isArray(row.genre) && row.genre[3] ? parseInt(row.genre[3], 10) : NaN;
             const yr = row.release_year || (relDate ? parseInt(relDate.slice(0, 4), 10) : 2026);
             return {
               id: row.id,
@@ -936,6 +966,7 @@
               year: yr,
               release_date: relDate,
               display_date: formatDisplayDate(relDate, yr),
+              pin_order: !isNaN(pinRaw) && pinRaw > 0 ? pinRaw : null,
               category: Array.isArray(row.genre) && row.genre[0] ? row.genre[0] : "Bollywood",
               quality: row.quality || "1080p",
               audio: Array.isArray(row.genre) && row.genre[1] ? row.genre[1] : "Dual Audio",
@@ -972,6 +1003,8 @@
       const year = release_date ? parseInt(release_date.slice(0, 4), 10) : 2026;
       const audio = document.getElementById("inAudio").value.trim();
       const quality = document.getElementById("inQuality").value;
+      const pinRaw = parseInt(document.getElementById("inPinOrder").value.trim(), 10);
+      const pinStr = (!isNaN(pinRaw) && pinRaw > 0) ? String(pinRaw) : "";
       const poster_url = document.getElementById("inPoster").value.trim();
       const description = document.getElementById("inDesc").value.trim();
 
@@ -999,7 +1032,7 @@
         description,
         poster_url: poster_url || null,
         release_year: year,
-        genre: [category, audio, release_date],
+        genre: [category, audio, release_date, pinStr],
         quality,
         download_links: linkEntries
       };
