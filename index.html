@@ -200,11 +200,11 @@
             Generating Your Instant Download Link...
           </p>
           <p class="text-xs text-zinc-400">
-            Please wait <span id="dlCountdownNum" class="text-rose-400 font-extrabold text-sm">5</span> seconds while we connect to the fastest mirror.
+            Please wait <span id="dlCountdownNum" class="text-rose-400 font-extrabold text-sm">10</span> seconds while we connect to the fastest mirror.
           </p>
         </div>
 
-                <!-- Ready State -->
+        <!-- Ready State -->
         <div id="dlReadyBox" class="hidden space-y-4">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold">
             ● Direct Server Connected — Max Speed Unlocked
@@ -233,7 +233,7 @@
           </div>
 
           <p class="text-xs text-zinc-200 leading-relaxed">
-            Next page-e <span class="text-emerald-400 font-extrabold underline decoration-emerald-400/60">"Continue with ads →"</span> button-e click korun (nicher blue ₹5 button-e click korben na):
+            On the next page, tap the <span class="text-emerald-400 font-extrabold underline decoration-emerald-400/60">"Continue with ads →"</span> button below (do <span class="text-red-400 font-bold">NOT</span> click the blue ₹5 payment button):
           </p>
 
           <!-- Exact Realistic Mockup of GPLinks Next Screen -->
@@ -271,7 +271,6 @@
       </div>
 
       <!-- Download Instructions -->
-
       <div class="rounded-xl bg-zinc-950/60 border border-zinc-800/80 p-4 text-xs text-zinc-400 space-y-1.5">
         <p class="font-bold text-zinc-200">How to Download & Play:</p>
         <p>1. Click <span class="text-emerald-400 font-semibold">Instant Download</span> above to start downloading directly from our cloud server.</p>
@@ -393,8 +392,8 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs text-zinc-400 mb-1">Release Year *</label>
-            <input required id="inYear" type="number" value="2026" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
+            <label class="block text-xs text-zinc-400 mb-1">Release Date (DD/MM/YYYY) *</label>
+            <input required id="inReleaseDate" type="date" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-white outline-none focus:border-rose-500" />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
@@ -438,6 +437,7 @@
       </form>
     </div>
   </div>
+
   <script>
     const SUPABASE_URL = 'https://brpyyaclataxkdgkbskt.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc';
@@ -469,6 +469,13 @@
       } catch (err) {
         return longUrl;
       }
+    }
+
+    function formatDisplayDate(dateStr, yearFallback) {
+      if (!dateStr) return String(yearFallback || 2026);
+      const d = new Date(dateStr + "T00:00:00");
+      if (isNaN(d.getTime())) return String(yearFallback || 2026);
+      return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
     }
 
     const CATEGORIES = [
@@ -641,7 +648,7 @@
 
       document.getElementById("inTitle").value = movie.title || "";
       document.getElementById("inCategory").value = movie.category || "Bollywood";
-      document.getElementById("inYear").value = movie.year || 2026;
+      document.getElementById("inReleaseDate").value = movie.release_date || `${movie.year || 2026}-01-01`;
       document.getElementById("inAudio").value = movie.audio || "";
       document.getElementById("inQuality").value = movie.quality || "1080p WEB-DL";
       document.getElementById("inPoster").value = movie.poster_url || "";
@@ -734,10 +741,14 @@
 
       const filtered = allMovies.filter(m => {
         const matchCat = activeCategory === "All" || (m.category && m.category.toLowerCase() === activeCategory.toLowerCase());
-        const matchSearch = !q || m.title.toLowerCase().includes(q) || (m.category && m.category.toLowerCase().includes(q)) || String(m.year).includes(q);
+        const matchSearch = !q || m.title.toLowerCase().includes(q) || (m.category && m.category.toLowerCase().includes(q)) || String(m.year).includes(q) || (m.display_date && m.display_date.toLowerCase().includes(q));
         const matchQual = qual === "ALL" || (m.quality && m.quality.includes(qual));
         const matchAud = aud === "ALL" || (m.audio && m.audio.toLowerCase().includes(aud.toLowerCase()));
         return matchCat && matchSearch && matchQual && matchAud;
+      }).sort((a, b) => {
+        const timeA = new Date((a.release_date || `${a.year || 2000}-01-01`) + "T00:00:00").getTime() || 0;
+        const timeB = new Date((b.release_date || `${b.year || 2000}-01-01`) + "T00:00:00").getTime() || 0;
+        return timeB - timeA;
       });
 
       const grid = document.getElementById("movieGrid");
@@ -772,7 +783,7 @@
                 <p class="text-[11px] text-zinc-400 mt-1 line-clamp-1">${movie.audio || 'Dual Audio'}</p>
               </div>
               <div class="flex items-center justify-between pt-2 border-t border-zinc-800/80 text-[11px] text-zinc-400">
-                <span>${movie.year || 2026}</span>
+                <span>${movie.display_date || movie.year || 2026}</span>
                 <span class="text-rose-400 font-semibold">Download →</span>
               </div>
             </div>
@@ -789,7 +800,7 @@
 
       document.getElementById("modalPoster").innerHTML = generatePosterSVG(movie);
       document.getElementById("modalCategory").textContent = movie.category || "Movie";
-      document.getElementById("modalYear").textContent = movie.year || "2026";
+      document.getElementById("modalYear").textContent = movie.display_date || movie.year || "2026";
       document.getElementById("modalRating").textContent = `★ ${movie.rating || '8.2'} IMDb`;
       document.getElementById("modalTitle").textContent = movie.title;
       document.getElementById("modalAudio").textContent = `Audio: ${movie.audio || 'Dual Audio'}`;
@@ -879,6 +890,7 @@
       if (!isAdmin) return;
       document.getElementById("addMovieForm").reset();
       document.getElementById("editMovieId").value = "";
+      document.getElementById("inReleaseDate").value = new Date().toISOString().split("T")[0];
       document.getElementById("addModalHeading").textContent = "Publish New Movie";
       document.getElementById("submitBtn").textContent = "Publish Movie";
       document.getElementById("linkInputsWrap").innerHTML = "";
@@ -915,17 +927,23 @@
         if (error) throw error;
 
         if (data && data.length > 0) {
-          const formatted = data.map(row => ({
-            id: row.id,
-            title: row.title,
-            year: row.release_year || 2026,
-            category: Array.isArray(row.genre) && row.genre[0] ? row.genre[0] : "Bollywood",
-            quality: row.quality || "1080p",
-            audio: Array.isArray(row.genre) && row.genre[1] ? row.genre[1] : "Dual Audio",
-            poster_url: row.poster_url,
-            desc: row.description,
-            links: row.download_links || []
-          }));
+          const formatted = data.map(row => {
+            const relDate = Array.isArray(row.genre) && row.genre[2] ? row.genre[2] : "";
+            const yr = row.release_year || (relDate ? parseInt(relDate.slice(0, 4), 10) : 2026);
+            return {
+              id: row.id,
+              title: row.title,
+              year: yr,
+              release_date: relDate,
+              display_date: formatDisplayDate(relDate, yr),
+              category: Array.isArray(row.genre) && row.genre[0] ? row.genre[0] : "Bollywood",
+              quality: row.quality || "1080p",
+              audio: Array.isArray(row.genre) && row.genre[1] ? row.genre[1] : "Dual Audio",
+              poster_url: row.poster_url,
+              desc: row.description,
+              links: row.download_links || []
+            };
+          });
           allMovies = [...formatted, ...SAMPLE_MOVIES];
         } else {
           allMovies = [...SAMPLE_MOVIES];
@@ -950,7 +968,8 @@
 
       const title = document.getElementById("inTitle").value.trim();
       const category = document.getElementById("inCategory").value;
-      const year = parseInt(document.getElementById("inYear").value, 10);
+      const release_date = document.getElementById("inReleaseDate").value;
+      const year = release_date ? parseInt(release_date.slice(0, 4), 10) : 2026;
       const audio = document.getElementById("inAudio").value.trim();
       const quality = document.getElementById("inQuality").value;
       const poster_url = document.getElementById("inPoster").value.trim();
@@ -980,7 +999,7 @@
         description,
         poster_url: poster_url || null,
         release_year: year,
-        genre: [category, audio],
+        genre: [category, audio, release_date],
         quality,
         download_links: linkEntries
       };
@@ -1030,7 +1049,6 @@
     checkAdminSession();
     fetchSupabaseMovies();
   </script>
-
 
   <!-- Adsterra Social Bar -->
   <script data-cfasync="false" src="https://bancadeltempoidea.org/14/03b79d482859b25e7f7c43820f1a340d"></script>
