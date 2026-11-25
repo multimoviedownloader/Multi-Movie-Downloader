@@ -221,50 +221,38 @@
           </div>
         </div>
 
-        <!-- Visual Step-by-Step Guide (Always Visible Even During 10s Countdown) -->
+        <!-- Real Auto-Playing Video Download Tutorial (Always Visible Even During 10s Countdown) -->
         <div class="mt-4 text-left rounded-2xl bg-gradient-to-b from-amber-500/10 to-zinc-900 border border-amber-500/40 p-4 space-y-3">
           <div class="flex items-center justify-between gap-2">
             <span class="inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-400">
-              ⚠️ FREE DOWNLOAD GUIDE (No ₹5 Pay)
+              🎬 HOW TO DOWNLOAD FOR FREE (Video Guide)
             </span>
             <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
               100% Free
             </span>
           </div>
 
-          <p class="text-xs text-zinc-200 leading-relaxed">
-            On the next page, tap the <span class="text-emerald-400 font-extrabold underline decoration-emerald-400/60">"Continue with ads →"</span> button below (do <span class="text-red-400 font-bold">NOT</span> click the blue ₹5 payment button):
-          </p>
-
-          <!-- Exact Realistic Mockup of GPLinks Next Screen -->
-          <div class="rounded-xl bg-white text-zinc-900 p-4 shadow-xl border border-zinc-200 space-y-3 max-w-xs mx-auto">
-            <div class="text-center space-y-0.5">
-              <p class="text-[11px] font-bold text-zinc-500">Go Ad-Free for <span class="line-through">₹299</span> <span class="text-blue-600 font-extrabold">₹5</span></p>
-              <p class="text-[10px] text-zinc-400">Skip the ads — or continue with a short ad.</p>
+          <!-- 3-Step Visual Pill Summary -->
+          <div class="grid grid-cols-3 gap-1.5 text-center text-[10px] font-bold">
+            <div class="rounded-lg bg-zinc-950/90 border border-rose-500/40 px-2 py-1.5 text-rose-300">
+              1. Continue with ads →
             </div>
-
-            <!-- Highlighted Exact Button -->
-            <div class="relative pt-2">
-              <span class="absolute -top-1 right-2 z-10 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-extrabold uppercase tracking-wider shadow-md animate-bounce">
-                👇🏻 Click Here
-              </span>
-              <div class="w-full py-2.5 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/70 text-center font-bold text-xs text-zinc-900 shadow-sm">
-                Continue with ads →
-              </div>
+            <div class="rounded-lg bg-zinc-950/90 border border-blue-500/40 px-2 py-1.5 text-blue-300">
+              2. Tap CONTINUE
             </div>
+            <div class="rounded-lg bg-zinc-950/90 border border-emerald-500/40 px-2 py-1.5 text-emerald-300">
+              3. Tap Get Link
+            </div>
+          </div>
 
-            <div class="text-center text-[9px] font-bold text-zinc-400">OR</div>
-
-            <!-- Realistic Blue Button with Ignore Overlay -->
-            <div class="relative">
-              <div class="w-full py-2.5 px-3 rounded-xl bg-blue-600/80 text-center font-bold text-xs text-white/90">
-                ⚡ Continue to Pay ₹5
-              </div>
-              <div class="absolute inset-0 rounded-xl bg-red-950/75 border border-red-500 flex items-center justify-center">
-                <span class="px-2 py-0.5 rounded bg-red-600 text-white text-[10px] font-extrabold uppercase tracking-wide">
-                  ✕ Ignore (Paid)
-                </span>
-              </div>
+          <!-- Auto-Playing Muted Tutorial Video -->
+          <div class="relative rounded-xl overflow-hidden border border-zinc-800 bg-black max-w-xs mx-auto shadow-2xl">
+            <video id="dlGuideVideo" src="guide.mp4" autoplay loop muted playsinline preload="auto"
+              class="w-full max-h-[380px] object-contain mx-auto block">
+            </video>
+            <div class="bg-zinc-950/90 border-t border-zinc-800 px-3 py-1.5 flex items-center justify-between text-[10px] text-zinc-400">
+              <span>● Live Screen Guide (Auto-Playing)</span>
+              <span class="text-red-400 font-bold">Ignore ₹5 Pay Button</span>
             </div>
           </div>
         </div>
@@ -398,26 +386,13 @@
           <label class="block text-xs text-zinc-400 mb-1">Movie / Series Title *</label>
           <input required id="inTitle" type="text" placeholder="e.g. Ramayana (2026)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-zinc-400 mb-1">Category *</label>
-            <select id="inCategory" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-white outline-none focus:border-rose-500">
-              <option>Bollywood</option>
-              <option>South Indian</option>
-              <option>Bengali</option>
-              <option>Hollywood</option>
-              <option>Web Series</option>
-              <option>Anime</option>
-              <option>Public Domain Classics</option>
-              <option>Action</option>
-              <option>Sci-Fi</option>
-              <option>Thriller</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs text-zinc-400 mb-1">Release Date (DD/MM/YYYY) *</label>
-            <input required id="inReleaseDate" type="date" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-white outline-none focus:border-rose-500" />
-          </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1.5">Categories * (Tap to select one or multiple)</label>
+          <div id="inCategoryChips" class="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-zinc-950 border border-zinc-800"></div>
+        </div>
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1">Release Date (DD/MM/YYYY) *</label>
+          <input required id="inReleaseDate" type="date" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-white outline-none focus:border-rose-500" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -514,6 +489,7 @@
 
     let allMovies = [];
     let activeCategory = "All";
+    let selectedFormCategories = ["Bollywood"];
     let isAdmin = false;
     let countdownInterval = null;
     let currentDirectUrl = "";
@@ -559,6 +535,12 @@
       document.getElementById("downloadPageView").classList.remove("hidden");
       window.scrollTo({ top: 0, behavior: "smooth" });
 
+      const guideVid = document.getElementById("dlGuideVideo");
+      if (guideVid) {
+        guideVid.currentTime = 0;
+        guideVid.play().catch(() => {});
+      }
+
       if (countdownInterval) clearInterval(countdownInterval);
       let remaining = DOWNLOAD_WAIT_SECONDS;
       const timerBox = document.getElementById("dlTimerBox");
@@ -583,6 +565,8 @@
 
     function exitDownloadPage() {
       if (countdownInterval) clearInterval(countdownInterval);
+      const guideVid = document.getElementById("dlGuideVideo");
+      if (guideVid) guideVid.pause();
       document.getElementById("downloadPageView").classList.add("hidden");
       document.getElementById("homeView").classList.remove("hidden");
       document.getElementById("navSearchWrap").classList.remove("hidden");
@@ -749,6 +733,35 @@
       modal.classList.remove("flex");
     }
 
+    function renderFormCategoryChips() {
+      const wrap = document.getElementById("inCategoryChips");
+      if (!wrap) return;
+      wrap.innerHTML = CATEGORIES.filter(c => c !== "All").map(cat => {
+        const active = selectedFormCategories.includes(cat);
+        return `
+          <button type="button" onclick="toggleFormCategory('${cat}')"
+            class="px-2.5 py-1 rounded-lg text-xs font-semibold transition border ${
+              active
+                ? "bg-rose-600 text-white border-rose-500 shadow-sm"
+                : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white"
+            }">
+            ${active ? "✓ " : "+ "}${cat}
+          </button>
+        `;
+      }).join("");
+    }
+
+    function toggleFormCategory(cat) {
+      if (selectedFormCategories.includes(cat)) {
+        if (selectedFormCategories.length > 1) {
+          selectedFormCategories = selectedFormCategories.filter(c => c !== cat);
+        }
+      } else {
+        selectedFormCategories.push(cat);
+      }
+      renderFormCategoryChips();
+    }
+
     function addLinkRow(labelVal = "", sizeVal = "", urlVal = "", isFirst = false) {
       const wrap = document.getElementById("linkInputsWrap");
       const row = document.createElement("div");
@@ -772,7 +785,10 @@
       document.getElementById("submitBtn").textContent = "Save Changes";
 
       document.getElementById("inTitle").value = movie.title || "";
-      document.getElementById("inCategory").value = movie.category || "Bollywood";
+      selectedFormCategories = Array.isArray(movie.categories) && movie.categories.length > 0
+        ? [...movie.categories]
+        : [movie.category || "Bollywood"];
+      renderFormCategoryChips();
       document.getElementById("inReleaseDate").value = movie.release_date || `${movie.year || 2026}-01-01`;
       document.getElementById("inAudio").value = movie.audio || "";
       document.getElementById("inQuality").value = movie.quality || "1080p WEB-DL";
@@ -822,7 +838,8 @@
 
       const pinNum = parseInt(input.trim(), 10);
       const pinStr = (!isNaN(pinNum) && pinNum > 0) ? String(pinNum) : "";
-      const updatedGenre = [movie.category, movie.audio, movie.release_date || "", pinStr];
+      const catJoined = (movie.categories && movie.categories.length > 0) ? movie.categories.join(", ") : movie.category;
+      const updatedGenre = [catJoined, movie.audio, movie.release_date || "", pinStr];
 
       const { error } = await supabaseClient.from('movies').update({ genre: updatedGenre }).eq('id', id);
       if (error) {
@@ -886,8 +903,9 @@
       const aud = document.getElementById("audioFilter").value;
 
       const filtered = allMovies.filter(m => {
-        const matchCat = activeCategory === "All" || (m.category && m.category.toLowerCase() === activeCategory.toLowerCase());
-        const matchSearch = !q || m.title.toLowerCase().includes(q) || (m.category && m.category.toLowerCase().includes(q)) || String(m.year).includes(q) || (m.display_date && m.display_date.toLowerCase().includes(q));
+        const movieCats = Array.isArray(m.categories) ? m.categories : [m.category || "Bollywood"];
+        const matchCat = activeCategory === "All" || movieCats.some(c => c.toLowerCase() === activeCategory.toLowerCase());
+        const matchSearch = !q || m.title.toLowerCase().includes(q) || movieCats.some(c => c.toLowerCase().includes(q)) || String(m.year).includes(q) || (m.display_date && m.display_date.toLowerCase().includes(q));
         const matchQual = qual === "ALL" || (m.quality && m.quality.includes(qual));
         const matchAud = aud === "ALL" || (m.audio && m.audio.toLowerCase().includes(aud.toLowerCase()));
         return matchCat && matchSearch && matchQual && matchAud;
@@ -949,7 +967,7 @@
       triggerAdCooldown();
 
       document.getElementById("modalPoster").innerHTML = generatePosterSVG(movie);
-      document.getElementById("modalCategory").textContent = movie.category || "Movie";
+      document.getElementById("modalCategory").textContent = (movie.categories || [movie.category || "Movie"]).join(" • ");
       document.getElementById("modalYear").textContent = movie.display_date || movie.year || "2026";
       document.getElementById("modalRating").textContent = `★ ${movie.rating || '8.2'} IMDb`;
       document.getElementById("modalTitle").textContent = movie.title;
@@ -1045,6 +1063,8 @@
       document.getElementById("submitBtn").textContent = "Publish Movie";
       document.getElementById("linkInputsWrap").innerHTML = "";
       addLinkRow("1080p Full HD", "", "", true);
+      selectedFormCategories = ["Bollywood"];
+      renderFormCategoryChips();
 
       const modal = document.getElementById("addModal");
       modal.classList.remove("hidden");
@@ -1081,6 +1101,8 @@
             const relDate = Array.isArray(row.genre) && row.genre[2] ? row.genre[2] : "";
             const pinRaw = Array.isArray(row.genre) && row.genre[3] ? parseInt(row.genre[3], 10) : NaN;
             const yr = row.release_year || (relDate ? parseInt(relDate.slice(0, 4), 10) : 2026);
+            const rawCatStr = Array.isArray(row.genre) && row.genre[0] ? row.genre[0] : "Bollywood";
+            const catList = rawCatStr.split(",").map(s => s.trim()).filter(Boolean);
             return {
               id: row.id,
               title: row.title,
@@ -1088,7 +1110,8 @@
               release_date: relDate,
               display_date: formatDisplayDate(relDate, yr),
               pin_order: !isNaN(pinRaw) && pinRaw > 0 ? pinRaw : null,
-              category: Array.isArray(row.genre) && row.genre[0] ? row.genre[0] : "Bollywood",
+              category: catList[0] || "Bollywood",
+              categories: catList,
               quality: row.quality || "1080p",
               audio: Array.isArray(row.genre) && row.genre[1] ? row.genre[1] : "Dual Audio",
               poster_url: row.poster_url,
@@ -1119,7 +1142,7 @@
       btn.disabled = true;
 
       const title = document.getElementById("inTitle").value.trim();
-      const category = document.getElementById("inCategory").value;
+      const category = selectedFormCategories.length > 0 ? selectedFormCategories.join(", ") : "Bollywood";
       const release_date = document.getElementById("inReleaseDate").value;
       const year = release_date ? parseInt(release_date.slice(0, 4), 10) : 2026;
       const audio = document.getElementById("inAudio").value.trim();
