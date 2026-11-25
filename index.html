@@ -34,7 +34,7 @@
       </div>
       <div class="flex items-center gap-2">
         <button onclick="openAddModal()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 font-bold text-white transition">
-          + Add Movie
+          + Add Movie / Series
         </button>
         <button onclick="adminLogout()" class="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 transition">
           Logout
@@ -153,7 +153,7 @@
 
   <!-- ==================== DEDICATED INSTANT DOWNLOAD PAGE VIEW ==================== -->
   <div id="downloadPageView" class="hidden flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
-    <button onclick="exitDownloadPage()" class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white mb-6 transition">
+    <button id="dlBackBtn" onclick="exitDownloadPage()" class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white mb-6 transition">
       ← Back to Movies
     </button>
 
@@ -221,7 +221,7 @@
           </div>
         </div>
 
-        <!-- Real Auto-Playing Video Download Tutorial (Always Visible Even During 10s Countdown) -->
+        <!-- Real Auto-Playing Video Download Tutorial -->
         <div class="mt-4 text-left rounded-2xl bg-gradient-to-b from-amber-500/10 to-zinc-900 border border-amber-500/40 p-4 space-y-3">
           <div class="flex items-center justify-between gap-2">
             <span class="inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-400">
@@ -232,7 +232,6 @@
             </span>
           </div>
 
-          <!-- 3-Step Visual Pill Summary -->
           <div class="grid grid-cols-3 gap-1.5 text-center text-[10px] font-bold">
             <div class="rounded-lg bg-zinc-950/90 border border-rose-500/40 px-2 py-1.5 text-rose-300">
               1. Continue with ads →
@@ -245,7 +244,6 @@
             </div>
           </div>
 
-          <!-- Auto-Playing Muted Tutorial Video -->
           <div class="relative rounded-xl overflow-hidden border border-zinc-800 bg-black max-w-xs mx-auto shadow-2xl">
             <video id="dlGuideVideo" src="guide.mp4" autoplay loop muted playsinline preload="auto"
               class="w-full max-h-[380px] object-contain mx-auto block">
@@ -275,7 +273,7 @@
     </div>
   </footer>
 
-  <!-- Movie Details Modal -->
+  <!-- Movie / Series Details Modal -->
   <div id="movieModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
     <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
       <div class="relative p-6 sm:p-7">
@@ -296,15 +294,9 @@
           </div>
         </div>
 
-        <!-- Screenshots Section -->
-        <div id="modalScreenshotsWrap" class="hidden mt-6 pt-5 border-t border-zinc-800">
-          <h4 class="text-sm font-bold text-white mb-3">Screenshots (Click to Zoom)</h4>
-          <div id="modalScreenshots" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
-        </div>
-
-        <!-- Download & Watch Links -->
+        <!-- Download & Watch Links / Season & Episode Selector (Placed ABOVE Screenshots for instant access) -->
         <div class="mt-6 pt-5 border-t border-zinc-800">
-          <h4 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+          <h4 id="modalLinksHeading" class="text-sm font-bold text-white mb-3 flex items-center gap-2">
             <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
@@ -320,6 +312,12 @@
             <button onclick="stopStreamPlayer()" class="text-xs text-zinc-400 hover:text-white">Close Player</button>
           </div>
           <video id="modalVideoPlayer" controls playsinline class="w-full rounded-xl bg-black max-h-80"></video>
+        </div>
+
+        <!-- Screenshots Section -->
+        <div id="modalScreenshotsWrap" class="hidden mt-6 pt-5 border-t border-zinc-800">
+          <h4 class="text-sm font-bold text-white mb-3">Screenshots (Click to Zoom)</h4>
+          <div id="modalScreenshots" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
         </div>
       </div>
     </div>
@@ -373,18 +371,34 @@
     </div>
   </div>
 
-  <!-- Admin Add / Edit Movie Modal -->
+  <!-- Admin Add / Edit Movie & Series Modal -->
   <div id="addModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
     <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4">
-        <h3 id="addModalHeading" class="text-lg font-bold text-white">Publish New Movie</h3>
+        <h3 id="addModalHeading" class="text-lg font-bold text-white">Publish New Movie / Series</h3>
         <button onclick="closeAddModal()" class="w-8 h-8 rounded-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700">✕</button>
       </div>
       <form id="addMovieForm" class="space-y-3.5 text-sm">
         <input type="hidden" id="editMovieId" value="" />
+
+        <!-- Content Type Switcher (Movie vs Web Series) -->
+        <div>
+          <label class="block text-xs text-zinc-400 mb-1.5">Content Type *</label>
+          <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-zinc-950 border border-zinc-800">
+            <button type="button" id="typeBtnMovie" onclick="setFormContentType('movie')"
+              class="py-2 rounded-lg text-xs font-extrabold transition bg-rose-600 text-white shadow">
+              🎬 Single Movie
+            </button>
+            <button type="button" id="typeBtnSeries" onclick="setFormContentType('series')"
+              class="py-2 rounded-lg text-xs font-extrabold transition text-zinc-400 hover:text-white">
+              📺 Web Series (Seasons & Episodes)
+            </button>
+          </div>
+        </div>
+
         <div>
           <label class="block text-xs text-zinc-400 mb-1">Movie / Series Title *</label>
-          <input required id="inTitle" type="text" placeholder="e.g. Ramayana (2026)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
+          <input required id="inTitle" type="text" placeholder="e.g. Mirzapur / Ramayana (2026)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
         </div>
         <div>
           <label class="block text-xs text-zinc-400 mb-1.5">Categories * (Tap to select one or multiple)</label>
@@ -418,13 +432,13 @@
           <input id="inPoster" type="url" placeholder="https://i.ibb.co/xxxxxxx/poster.jpg" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
         </div>
 
-        <!-- Multi-Quality Telegram Bot Links -->
+        <!-- Multi-Quality or Multi-Season/Episode Telegram Bot Links -->
         <div class="space-y-2 pt-1">
           <div class="flex items-center justify-between">
-            <label class="block text-xs font-semibold text-zinc-300">Download / Stream Links *</label>
-            <button type="button" onclick="addLinkRow()" class="text-xs font-bold text-rose-400 hover:text-rose-300">+ Add Quality</button>
+            <label id="linksSectionLabel" class="block text-xs font-semibold text-zinc-300">Download / Stream Links *</label>
+            <button type="button" id="addLinkRowBtn" onclick="addLinkRow()" class="text-xs font-bold text-rose-400 hover:text-rose-300">+ Add Quality</button>
           </div>
-          <div id="linkInputsWrap" class="space-y-2"></div>
+          <div id="linkInputsWrap" class="space-y-2.5"></div>
         </div>
 
         <div>
@@ -490,9 +504,13 @@
     let allMovies = [];
     let activeCategory = "All";
     let selectedFormCategories = ["Bollywood"];
+    let formContentType = "movie";
     let isAdmin = false;
     let countdownInterval = null;
     let currentDirectUrl = "";
+    let lastViewedMovieId = null;
+    let activeModalMovieId = null;
+    let activeSelectedSeason = null;
 
     // ==================== DEDICATED DOWNLOAD PAGE LOGIC ====================
     function openDownloadPage(movieId, linkIndex) {
@@ -504,7 +522,14 @@
       const linkObj = downloadItems[linkIndex] || downloadItems[0];
       if (!linkObj) return;
 
-      closeMovieModal();
+      lastViewedMovieId = movie.id;
+
+      // Hide modal visually without altering browser history stack
+      stopStreamPlayer();
+      const modal = document.getElementById("movieModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+
       const rawUrl = linkObj.url.trim();
       const isAlreadyShortened = /gplinks\./i.test(rawUrl);
       const finalDownloadUrl = (GPLINKS_API_TOKEN && !isAlreadyShortened && /^https?:\/\//i.test(rawUrl))
@@ -513,11 +538,17 @@
 
       currentDirectUrl = finalDownloadUrl;
 
+      const isSeriesItem = Boolean(linkObj.season || linkObj.episode);
+      const displayTitle = isSeriesItem
+        ? `${movie.title} — ${linkObj.season || "Season 1"} • ${linkObj.episode || linkObj.label}`
+        : movie.title;
+
       document.getElementById("dlPagePoster").innerHTML = generatePosterSVG(movie);
-      document.getElementById("dlPageTitle").textContent = movie.title;
+      document.getElementById("dlPageTitle").textContent = displayTitle;
       document.getElementById("dlPageQuality").textContent = linkObj.label || movie.quality || "1080p HD";
       document.getElementById("dlPageSize").textContent = linkObj.size || "High-Speed Cloud";
       document.getElementById("dlPageAudio").textContent = movie.audio || "Dual Audio";
+      document.getElementById("dlBackBtn").textContent = isSeriesItem ? "← Back to Episodes" : "← Back to Movies";
 
       const dlBtn = document.getElementById("dlFinalBtn");
       dlBtn.href = AD_DIRECT_LINK || finalDownloadUrl;
@@ -534,6 +565,10 @@
       document.getElementById("categoryNavWrap").classList.add("hidden");
       document.getElementById("downloadPageView").classList.remove("hidden");
       window.scrollTo({ top: 0, behavior: "smooth" });
+
+      if (!history.state || history.state.view !== "download") {
+        history.pushState({ view: "download", movieId: movie.id }, "", "#download");
+      }
 
       const guideVid = document.getElementById("dlGuideVideo");
       if (guideVid) {
@@ -563,7 +598,7 @@
       }, 1000);
     }
 
-    function exitDownloadPage() {
+    function exitDownloadPage(fromPopState = false) {
       if (countdownInterval) clearInterval(countdownInterval);
       const guideVid = document.getElementById("dlGuideVideo");
       if (guideVid) guideVid.pause();
@@ -572,6 +607,18 @@
       document.getElementById("navSearchWrap").classList.remove("hidden");
       document.getElementById("mobileSearchWrap").classList.remove("hidden");
       document.getElementById("categoryNavWrap").classList.remove("hidden");
+
+      if (!fromPopState && history.state && history.state.view === "download") {
+        history.back();
+        return;
+      }
+
+      // If user came from a Series or Movie modal, reopen it so they can immediately pick the next episode
+      if (lastViewedMovieId) {
+        const targetId = lastViewedMovieId;
+        lastViewedMovieId = null;
+        openMovieModal(targetId, true);
+      }
     }
 
     function copyDirectLink() {
@@ -582,6 +629,17 @@
         setTimeout(() => { btn.textContent = "📋 Copy Link (IDM / ADM)"; }, 2000);
       });
     }
+
+    window.addEventListener("popstate", () => {
+      const dlView = document.getElementById("downloadPageView");
+      const movieModal = document.getElementById("movieModal");
+
+      if (dlView && !dlView.classList.contains("hidden")) {
+        exitDownloadPage(true);
+      } else if (movieModal && !movieModal.classList.contains("hidden")) {
+        closeMovieModal(true);
+      }
+    });
 
     // ==================== ADMIN & 2FA SECURITY LOGIC ====================
     let logoTapCount = 0;
@@ -733,6 +791,7 @@
       modal.classList.remove("flex");
     }
 
+    // ==================== CATEGORY CHIPS & SERIES FORM LOGIC ====================
     function renderFormCategoryChips() {
       const wrap = document.getElementById("inCategoryChips");
       if (!wrap) return;
@@ -758,20 +817,78 @@
         }
       } else {
         selectedFormCategories.push(cat);
+        if ((cat === "Web Series" || cat === "Anime") && formContentType === "movie") {
+          setFormContentType("series");
+        }
       }
       renderFormCategoryChips();
     }
 
-    function addLinkRow(labelVal = "", sizeVal = "", urlVal = "", isFirst = false) {
+    function setFormContentType(type) {
+      formContentType = type;
+      const btnMovie = document.getElementById("typeBtnMovie");
+      const btnSeries = document.getElementById("typeBtnSeries");
+      const label = document.getElementById("linksSectionLabel");
+      const addBtn = document.getElementById("addLinkRowBtn");
+
+      if (type === "series") {
+        btnSeries.className = "py-2 rounded-lg text-xs font-extrabold transition bg-rose-600 text-white shadow";
+        btnMovie.className = "py-2 rounded-lg text-xs font-extrabold transition text-zinc-400 hover:text-white";
+        label.textContent = "Seasons & Episodes *";
+        addBtn.textContent = "+ Add Episode";
+        if (!selectedFormCategories.includes("Web Series") && !selectedFormCategories.includes("Anime")) {
+          selectedFormCategories.push("Web Series");
+          renderFormCategoryChips();
+        }
+      } else {
+        btnMovie.className = "py-2 rounded-lg text-xs font-extrabold transition bg-rose-600 text-white shadow";
+        btnSeries.className = "py-2 rounded-lg text-xs font-extrabold transition text-zinc-400 hover:text-white";
+        label.textContent = "Download / Stream Links *";
+        addBtn.textContent = "+ Add Quality";
+      }
+
+      const wrap = document.getElementById("linkInputsWrap");
+      wrap.innerHTML = "";
+      if (type === "series") {
+        addLinkRow("1080p", "", "", true, "SEASON 1", "EPISODE 1");
+      } else {
+        addLinkRow("1080p Full HD", "", "", true);
+      }
+    }
+
+    function addLinkRow(labelVal = "", sizeVal = "", urlVal = "", isFirst = false, seasonVal = "", episodeVal = "") {
       const wrap = document.getElementById("linkInputsWrap");
       const row = document.createElement("div");
-      row.className = "grid grid-cols-12 gap-2 link-input-row";
-      row.innerHTML = `
-        <input type="text" value="${labelVal}" placeholder="1080p / 720p" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-label" />
-        <input type="text" value="${sizeVal}" placeholder="Size (3.43 GB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-size" />
-        <input ${isFirst ? 'required' : ''} type="url" value="${urlVal}" placeholder="https://tgfilestream..." class="${isFirst ? 'col-span-5' : 'col-span-4'} bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-url" />
-        ${isFirst ? '' : '<button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>'}
-      `;
+
+      if (formContentType === "series") {
+                const lastRow = wrap.querySelector(".link-input-row:last-child");
+        const autoSeason = (seasonVal || (lastRow ? lastRow.querySelector(".link-season").value : "SEASON 1")).toUpperCase();
+        const sameSeasonCount = Array.from(wrap.querySelectorAll(".link-input-row"))
+          .filter(r => r.querySelector(".link-season").value.trim().toUpperCase() === autoSeason).length;
+        const autoEpisode = episodeVal || `EPISODE ${sameSeasonCount + 1}`;
+
+        row.className = "p-2.5 rounded-xl bg-zinc-950/90 border border-zinc-800 space-y-2 link-input-row";
+        row.innerHTML = `
+          <div class="grid grid-cols-12 gap-2">
+            <input type="text" value="${autoSeason}" placeholder="SEASON 1" class="col-span-5 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs font-bold text-amber-400 uppercase outline-none focus:border-rose-500 link-season" />
+            <input type="text" value="${autoEpisode}" placeholder="EPISODE 1" class="col-span-6 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white uppercase outline-none focus:border-rose-500 link-episode" />
+            ${isFirst ? '<div class="col-span-1"></div>' : '<button type="button" onclick="this.closest(\'.link-input-row\').remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>'}
+          </div>
+          <div class="grid grid-cols-12 gap-2">
+            <input type="text" value="${labelVal || '1080p'}" placeholder="1080p / 720p" class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-rose-500 link-label" />
+            <input type="text" value="${sizeVal}" placeholder="Size (450 MB)" class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-rose-500 link-size" />
+            <input ${isFirst ? 'required' : ''} type="url" value="${urlVal}" placeholder="https://tgfilestream..." class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-rose-500 link-url" />
+          </div>
+        `;
+      } else {
+        row.className = "grid grid-cols-12 gap-2 link-input-row";
+        row.innerHTML = `
+          <input type="text" value="${labelVal}" placeholder="1080p / 720p" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-label" />
+          <input type="text" value="${sizeVal}" placeholder="Size (3.43 GB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-size" />
+          <input ${isFirst ? 'required' : ''} type="url" value="${urlVal}" placeholder="https://tgfilestream..." class="${isFirst ? 'col-span-5' : 'col-span-4'} bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-url" />
+          ${isFirst ? '' : '<button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>'}
+        `;
+      }
       wrap.appendChild(row);
     }
 
@@ -781,7 +898,7 @@
       if (!movie || !isAdmin) return;
 
       document.getElementById("editMovieId").value = movie.id;
-      document.getElementById("addModalHeading").textContent = "Edit Movie";
+      document.getElementById("addModalHeading").textContent = "Edit Movie / Series";
       document.getElementById("submitBtn").textContent = "Save Changes";
 
       document.getElementById("inTitle").value = movie.title || "";
@@ -802,11 +919,21 @@
 
       document.getElementById("inScreenshots").value = screenshotUrls.join(", ");
 
+      const hasEpisodes = downloadItems.some(item => item.season || item.episode);
+      setFormContentType(hasEpisodes ? "series" : "movie");
+
       const wrap = document.getElementById("linkInputsWrap");
       wrap.innerHTML = "";
       if (downloadItems.length > 0) {
         downloadItems.forEach((item, idx) => {
-          addLinkRow(item.label || "", item.size || "", item.url || "", idx === 0);
+          addLinkRow(
+            item.label || "",
+            item.size || "",
+            item.url || "",
+            idx === 0,
+            item.season || "SEASON 1",
+            item.episode || `EPISODE ${idx + 1}`
+          );
         });
       } else {
         addLinkRow("1080p Full HD", "", "", true);
@@ -819,7 +946,7 @@
 
     async function deleteMovie(event, id) {
       event.stopPropagation();
-      if (!isAdmin || !confirm("Delete this movie permanently?")) return;
+      if (!isAdmin || !confirm("Delete this item permanently?")) return;
       const { error } = await supabaseClient.from('movies').delete().eq('id', id);
       if (error) {
         alert("Delete failed: " + error.message);
@@ -931,6 +1058,8 @@
       empty.classList.add("hidden");
       grid.innerHTML = filtered.map(movie => {
         const canManage = isAdmin && !String(movie.id).startsWith("sample-");
+        const rawLinks = Array.isArray(movie.links) ? movie.links : [];
+        const isSeries = rawLinks.some(item => item && (item.season || item.episode));
         return `
           <div onclick="openMovieModal('${movie.id}')" class="movie-card group cursor-pointer bg-zinc-900/80 border border-zinc-800/90 hover:border-rose-500/50 rounded-2xl overflow-hidden flex flex-col transition shadow-lg relative">
             ${canManage ? `
@@ -942,6 +1071,7 @@
             ` : ''}
             <div class="aspect-[2/3] w-full overflow-hidden bg-zinc-950 relative">
               ${generatePosterSVG(movie)}
+              ${isSeries ? '<span class="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-amber-500 text-black text-[10px] font-extrabold uppercase tracking-wider shadow">Series</span>' : ''}
             </div>
             <div class="p-3.5 flex-1 flex flex-col justify-between space-y-2">
               <div>
@@ -952,7 +1082,7 @@
               </div>
               <div class="flex items-center justify-between pt-2 border-t border-zinc-800/80 text-[11px] text-zinc-400">
                 <span>${movie.display_date || movie.year || 2026}</span>
-                <span class="text-rose-400 font-semibold">Download →</span>
+                <span class="text-rose-400 font-semibold">${isSeries ? 'Episodes →' : 'Download →'}</span>
               </div>
             </div>
           </div>
@@ -960,11 +1090,82 @@
       }).join("");
     }
 
-    function openMovieModal(id) {
+    // ==================== SEASON & EPISODE RENDERER IN MODAL ====================
+    function renderSeriesEpisodes(movieId, seasonName) {
+      const movie = allMovies.find(m => String(m.id) === String(movieId));
+      if (!movie) return;
+
+      activeSelectedSeason = seasonName;
+      const rawLinks = Array.isArray(movie.links) ? movie.links : [];
+      const downloadItems = rawLinks
+        .map((item, idx) => ({ ...item, _origIndex: idx }))
+        .filter(item => item && item.url);
+
+      const seasons = [...new Set(downloadItems.map(item => (item.season || "SEASON 1").toUpperCase()))];
+      const currentSeason = seasons.includes(seasonName) ? seasonName : seasons[0];
+      const seasonEpisodes = downloadItems.filter(item => (item.season || "SEASON 1").toUpperCase() === currentSeason);
+
+      const container = document.getElementById("modalLinks");
+      container.innerHTML = `
+        <!-- Stacked Season Buttons (SEASON 1, SEASON 2...) -->
+        <div class="space-y-2 mb-4">
+          ${seasons.map(s => {
+            const isSelected = s === currentSeason;
+            const epCount = downloadItems.filter(i => (i.season || "SEASON 1").toUpperCase() === s).length;
+            return `
+              <button type="button" onclick="renderSeriesEpisodes('${movie.id}', '${s.replace(/'/g, "\\'")}')"
+                class="w-full flex items-center justify-between px-4 py-3 rounded-xl font-extrabold text-xs sm:text-sm uppercase tracking-wider transition border ${
+                  isSelected
+                    ? "bg-rose-600 text-white border-rose-500 shadow-lg shadow-rose-600/25"
+                    : "bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-zinc-700 hover:text-white"
+                }">
+                <span>📺 ${s}</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded-md ${isSelected ? 'bg-black/30 text-white' : 'bg-zinc-900 text-zinc-400'}">
+                  ${epCount} ${epCount === 1 ? 'Episode' : 'Episodes'} ${isSelected ? '▼' : '▶'}
+                </span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+
+        <!-- Vertical Episode List for Selected Season -->
+        <div class="space-y-2 pt-2 border-t border-zinc-800/80">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-amber-400 mb-2">
+            ${currentSeason} — Tap an Episode to Download:
+          </p>
+          ${seasonEpisodes.map((ep, i) => {
+            const epTitle = (ep.episode || `EPISODE ${i + 1}`).toUpperCase();
+            return `
+              <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
+                 onclick="openDownloadPage('${movie.id}', ${ep._origIndex})"
+                 class="w-full flex items-center justify-between gap-3 p-3.5 rounded-xl bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-rose-500/60 transition group">
+                <div class="flex items-center gap-3">
+                  <span class="w-8 h-8 rounded-lg bg-rose-600/15 border border-rose-500/30 text-rose-400 font-extrabold text-xs flex items-center justify-center shrink-0">
+                    ${i + 1}
+                  </span>
+                  <div>
+                    <p class="text-sm font-extrabold text-white group-hover:text-rose-400 transition">${epTitle}</p>
+                    <p class="text-[11px] text-zinc-400">${ep.label || movie.quality || '1080p'} • ${ep.size || 'Direct Cloud'}</p>
+                  </div>
+                </div>
+                <span class="px-3 py-1.5 rounded-lg bg-rose-600 group-hover:bg-rose-500 text-white text-xs font-bold shadow shrink-0">
+                  ⬇ Download
+                </span>
+              </a>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function openMovieModal(id, skipPushState = false) {
       const movie = allMovies.find(m => String(m.id) === String(id));
       if (!movie) return;
 
-      triggerAdCooldown();
+      if (!skipPushState) {
+        triggerAdCooldown();
+      }
+      activeModalMovieId = movie.id;
 
       document.getElementById("modalPoster").innerHTML = generatePosterSVG(movie);
       document.getElementById("modalCategory").textContent = (movie.categories || [movie.category || "Movie"]).join(" • ");
@@ -989,37 +1190,61 @@
         ssWrap.classList.add("hidden");
       }
 
-      const links = downloadItems.length > 0
-        ? downloadItems
-        : [{ label: movie.quality || "1080p Direct", size: "Direct Link", url: "#" }];
+      const isSeries = downloadItems.some(item => item.season || item.episode);
+      const headingEl = document.getElementById("modalLinksHeading");
 
-      document.getElementById("modalLinks").innerHTML = links.map((l, idx) => {
-        const isDirectVideo = /\.(mp4|webm)(\?|$)/i.test(l.url);
-        return `
-          <div class="flex flex-wrap items-center justify-between gap-2 p-3.5 rounded-xl bg-zinc-950 border border-zinc-800">
-            <div>
-              <p class="text-sm font-bold text-white">${l.label}</p>
-              <p class="text-xs text-zinc-500">${l.size || 'High-Speed Telegram Cloud'}</p>
-            </div>
-            <div class="flex items-center gap-2">
-              ${isDirectVideo ? `
-                <button onclick="startStreamPlayer('${l.url}')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow transition">
-                  ▶ Watch
-                </button>` : ''}
-              <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
-                 onclick="openDownloadPage('${movie.id}', ${idx})"
-                 class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition inline-block">
-                ⬇ Direct Download
-              </a>
-            </div>
-          </div>
+      if (isSeries) {
+        headingEl.innerHTML = `📺 Select Season & Episode — Direct Download`;
+        const firstSeason = (downloadItems[0].season || "SEASON 1").toUpperCase();
+        const seasonToShow = (activeSelectedSeason && downloadItems.some(i => (i.season || "SEASON 1").toUpperCase() === activeSelectedSeason))
+          ? activeSelectedSeason
+          : firstSeason;
+        renderSeriesEpisodes(movie.id, seasonToShow);
+      } else {
+        activeSelectedSeason = null;
+        headingEl.innerHTML = `
+          <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Select Quality — Direct Download or Stream Online
         `;
-      }).join("");
+
+        const links = downloadItems.length > 0
+          ? downloadItems
+          : [{ label: movie.quality || "1080p Direct", size: "Direct Link", url: "#" }];
+
+        document.getElementById("modalLinks").innerHTML = links.map((l, idx) => {
+          const isDirectVideo = /\.(mp4|webm)(\?|$)/i.test(l.url);
+          return `
+            <div class="flex flex-wrap items-center justify-between gap-2 p-3.5 rounded-xl bg-zinc-950 border border-zinc-800">
+              <div>
+                <p class="text-sm font-bold text-white">${l.label}</p>
+                <p class="text-xs text-zinc-500">${l.size || 'High-Speed Telegram Cloud'}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                ${isDirectVideo ? `
+                  <button onclick="startStreamPlayer('${l.url}')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow transition">
+                    ▶ Watch
+                  </button>` : ''}
+                <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
+                   onclick="openDownloadPage('${movie.id}', ${idx})"
+                   class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition inline-block">
+                  ⬇ Direct Download
+                </a>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
 
       stopStreamPlayer();
       const modal = document.getElementById("movieModal");
       modal.classList.remove("hidden");
       modal.classList.add("flex");
+
+      if (!skipPushState && (!history.state || history.state.view !== "modal")) {
+        history.pushState({ view: "modal", movieId: movie.id }, "", "#details");
+      }
     }
 
     function startStreamPlayer(url) {
@@ -1047,11 +1272,17 @@
       lb.classList.add("flex");
     }
 
-    function closeMovieModal() {
+    function closeMovieModal(fromPopState = false) {
       stopStreamPlayer();
+      activeSelectedSeason = null;
+      lastViewedMovieId = null;
       const modal = document.getElementById("movieModal");
       modal.classList.add("hidden");
       modal.classList.remove("flex");
+
+      if (!fromPopState && history.state && history.state.view === "modal") {
+        history.back();
+      }
     }
 
     function openAddModal() {
@@ -1059,12 +1290,11 @@
       document.getElementById("addMovieForm").reset();
       document.getElementById("editMovieId").value = "";
       document.getElementById("inReleaseDate").value = new Date().toISOString().split("T")[0];
-      document.getElementById("addModalHeading").textContent = "Publish New Movie";
+      document.getElementById("addModalHeading").textContent = "Publish New Movie / Series";
       document.getElementById("submitBtn").textContent = "Publish Movie";
-      document.getElementById("linkInputsWrap").innerHTML = "";
-      addLinkRow("1080p Full HD", "", "", true);
       selectedFormCategories = ["Bollywood"];
       renderFormCategoryChips();
+      setFormContentType("movie");
 
       const modal = document.getElementById("addModal");
       modal.classList.remove("hidden");
@@ -1158,9 +1388,17 @@
         const label = row.querySelector(".link-label").value.trim() || quality;
         const size = row.querySelector(".link-size").value.trim() || "Direct Link";
         const rawUrl = row.querySelector(".link-url").value.trim();
+        const seasonEl = row.querySelector(".link-season");
+        const episodeEl = row.querySelector(".link-episode");
+
         if (rawUrl) {
           const url = await shortenWithGPLinks(rawUrl);
-          linkEntries.push({ label, size, url });
+          const entry = { label, size, url };
+          if (formContentType === "series" && seasonEl && episodeEl) {
+            entry.season = seasonEl.value.trim().toUpperCase() || "SEASON 1";
+            entry.episode = episodeEl.value.trim().toUpperCase() || "EPISODE 1";
+          }
+          linkEntries.push(entry);
         }
       }
 
