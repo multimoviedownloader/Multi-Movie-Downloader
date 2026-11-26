@@ -508,7 +508,8 @@
 
     // ==================== TMDB AUTO-FILL ====================
     async function autoFillFromTMDB() {
-      const query = document.getElementById("inTitle").value.trim();
+      let query = document.getElementById("inTitle").value.trim();
+      query = query.replace(/^Download\s+/i, "").replace(/\s*\(\d{4}\).*$/i, "").trim();
       if (!query) {
         alert("Age Movie ba Series-er naam likho!");
         return;
@@ -565,8 +566,9 @@
 
     function selectTMDBItem(encoded) {
       const item = JSON.parse(decodeURIComponent(encoded));
-      const yr = item.date ? item.date.slice(0, 4) : "";
-      document.getElementById("inTitle").value = yr ? `${item.title} (${yr})` : item.title;
+      const yr = item.date ? item.date.slice(0, 4) : "2026";
+      const typeTag = item.media_type === "tv" ? "Full Series" : "Full Movie";
+      document.getElementById("inTitle").value = `Download ${item.title} (${yr}) ${typeTag} V2 HQ-HDTC (ORG Multi Audio: Hindi-Tamil-Telugu-Malayalam-Kannada) 1080p, 720p & 480p [x264/HEVC] | Multi Movie Downloader`;
       if (item.date) document.getElementById("inReleaseDate").value = item.date;
       if (item.poster) document.getElementById("inPoster").value = item.poster;
       if (item.overview) document.getElementById("inDesc").value = item.overview;
@@ -607,6 +609,60 @@
         return /^https?:\/\//i.test(shortUrl) ? shortUrl : longUrl;
       } catch (err) {
         return longUrl;
+      }
+    }
+
+    // ==================== AUTO-DETECT FILE SIZE & QUALITY FROM LINK ====================
+    function formatBytes(bytes) {
+      if (!bytes || isNaN(bytes) || bytes <= 0) return "";
+      const k = 1024;
+      const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    }
+
+    function detectQualityFromText(text, isZip = false) {
+      const lower = (text || "").toLowerCase();
+      let res = "";
+      if (lower.includes("2160p") || lower.includes("4k")) res = "4K UHD";
+      else if (lower.includes("1080p")) res = "1080p";
+      else if (lower.includes("720p")) res = "720p";
+      else if (lower.includes("480p")) res = "480p";
+      else if (lower.includes("360p")) res = "360p";
+      if (!res) return "";
+      return isZip ? `${res} ZIP` : res;
+    }
+
+    async function autoDetectLinkInfo(urlInput, labelInput, sizeInput, isZip = false) {
+      const url = urlInput.value.trim();
+      if (!url || !/^https?:\/\//i.test(url)) return;
+
+      const detectedQual = detectQualityFromText(decodeURIComponent(url), isZip);
+      if (detectedQual && labelInput) {
+        labelInput.value = detectedQual;
+      }
+
+      if (sizeInput) {
+        const prevPlaceholder = sizeInput.placeholder;
+        sizeInput.placeholder = "Detecting...";
+        try {
+          const res = await fetch(url, { method: "HEAD" });
+          if (res.ok) {
+            const len = res.headers.get("content-length");
+            if (len) {
+              const formatted = formatBytes(parseInt(len, 10));
+              if (formatted) sizeInput.value = formatted;
+            }
+            const disp = res.headers.get("content-disposition") || "";
+            const qualFromHeader = detectQualityFromText(disp, isZip);
+            if (qualFromHeader && labelInput && !detectedQual) {
+              labelInput.value = qualFromHeader;
+            }
+          }
+        } catch (e) {
+          // CORS block korle silently skip korbe
+        }
+        sizeInput.placeholder = prevPlaceholder;
       }
     }
 
@@ -959,6 +1015,7 @@
       const zipSection = document.getElementById("zipSectionWrap");
       const movieLinksSec = document.getElementById("movieLinksSection");
       const seriesSeasonsSec = document.getElementById("seriesSeasonsSection");
+      const titleInput = document.getElementById("inTitle");
 
       if (type === "series") {
         btnSeries.className = "py-2 rounded-lg text-xs font-extrabold transition bg-rose-600 text-white shadow";
@@ -966,6 +1023,9 @@
         zipSection.classList.remove("hidden");
         movieLinksSec.classList.add("hidden");
         seriesSeasonsSec.classList.remove("hidden");
+        if (titleInput && titleInput.value.includes("Full Movie")) {
+          titleInput.value = titleInput.value.replace("Full Movie", "Full Series");
+        }
         if (!selectedFormCategories.includes("Web Series") && !selectedFormCategories.includes("Anime")) {
           selectedFormCategories.push("Web Series");
           renderFormCategoryChips();
@@ -979,13 +1039,16 @@
         zipSection.classList.add("hidden");
         movieLinksSec.classList.remove("hidden");
         seriesSeasonsSec.classList.add("hidden");
+        if (titleInput && titleInput.value.includes("Full Series")) {
+          titleInput.value = titleInput.value.replace("Full Series", "Full Movie");
+        }
         if (document.getElementById("movieLinkInputsWrap").children.length === 0) {
           addMovieLinkRow("1080p Full HD", "", "", true);
         }
       }
     }
 
-    // Complete Season ZIP Box (With Multi-Quality Support)
+    // Complete Season ZIP Box (With Multi-Quality Support & Auto-Detect)
     function addZipRow(seasonVal = "", labelVal = "1080p ZIP", sizeVal = "", urlVal = "", skipDefaultQuality = false) {
       const wrap = document.getElementById("zipInputsWrap");
       const count = wrap.querySelectorAll(".zip-input-row").length;
@@ -1020,13 +1083,13 @@
       qRow.innerHTML = `
         <input type="text" value="${defaultRes}" placeholder="1080p / 720p ZIP" class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs font-semibold text-amber-300 outline-none focus:border-amber-500 zip-label" />
         <input type="text" value="${qSize}" placeholder="Size (4.2 GB)" class="col-span-3 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-300 outline-none focus:border-amber-500 zip-size" />
-        <input type="url" value="${qUrl}" placeholder="https://tgfilestream..." class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-amber-500 zip-url" />
+        <input type="url" value="${qUrl}" onchange="const r=this.closest('.zip-quality-row'); autoDetectLinkInfo(this, r.querySelector('.zip-label'), r.querySelector('.zip-size'), true)" placeholder="https://tgfilestream..." class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-amber-500 zip-url" />
         <button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-zinc-300 hover:text-white">✕</button>
       `;
       list.appendChild(qRow);
     }
 
-    // Single Movie Quality Row
+    // Single Movie Quality Row (With Auto-Detect)
     function addMovieLinkRow(labelVal = "", sizeVal = "", urlVal = "", isFirst = false) {
       const wrap = document.getElementById("movieLinkInputsWrap");
       const row = document.createElement("div");
@@ -1034,7 +1097,7 @@
       row.innerHTML = `
         <input type="text" value="${labelVal}" placeholder="1080p / 720p" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-label" />
         <input type="text" value="${sizeVal}" placeholder="Size (3.43 GB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-size" />
-        <input ${isFirst ? 'required' : ''} type="url" value="${urlVal}" placeholder="https://tgfilestream..." class="${isFirst ? 'col-span-5' : 'col-span-4'} bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-url" />
+        <input ${isFirst ? 'required' : ''} type="url" value="${urlVal}" onchange="const r=this.closest('.movie-link-row'); autoDetectLinkInfo(this, r.querySelector('.link-label'), r.querySelector('.link-size'), false)" placeholder="https://tgfilestream..." class="${isFirst ? 'col-span-5' : 'col-span-4'} bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-url" />
         ${isFirst ? '' : '<button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>'}
       `;
       wrap.appendChild(row);
@@ -1122,7 +1185,7 @@
       row.innerHTML = `
         <input type="text" value="${defaultRes}" placeholder="1080p / 720p / 480p" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs font-semibold text-amber-300 outline-none focus:border-rose-500 ep-q-label" />
         <input type="text" value="${qSize}" placeholder="Size (450 MB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-300 outline-none focus:border-rose-500 ep-q-size" />
-        <input type="url" value="${qUrl}" placeholder="https://tgfilestream..." class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-rose-500 ep-q-url" />
+        <input type="url" value="${qUrl}" onchange="const r=this.closest('.ep-quality-row'); autoDetectLinkInfo(this, r.querySelector('.ep-q-label'), r.querySelector('.ep-q-size'), false)" placeholder="https://tgfilestream..." class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-rose-500 ep-q-url" />
         <button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-zinc-300 hover:text-white">✕</button>
       `;
       list.appendChild(row);
@@ -1819,9 +1882,18 @@
       renderFormCategoryChips();
       setFormContentType("movie");
 
+      const defaultTitle = "Download  (2026) Full Movie V2 HQ-HDTC (ORG Multi Audio: Hindi-Tamil-Telugu-Malayalam-Kannada) 1080p, 720p & 480p [x264/HEVC] | Multi Movie Downloader";
+      const titleInput = document.getElementById("inTitle");
+      titleInput.value = defaultTitle;
+
       const modal = document.getElementById("addModal");
       modal.classList.remove("hidden");
       modal.classList.add("flex");
+
+      setTimeout(() => {
+        titleInput.focus();
+        titleInput.setSelectionRange(9, 9);
+      }, 50);
     }
 
     function closeAddModal() {
@@ -1944,7 +2016,7 @@
           }
         }
 
-        // 2. Collect Nested Seasons & Multi-Quality Episodes
+        // 2. Collect Nested Seasons & Multi-Quality Episodes (respecting current card order)
         const seasonCards = Array.from(document.querySelectorAll(".season-card-box"));
         for (const sCard of seasonCards) {
           const sNum = sCard.querySelector(".season-num-input").value.trim() || "1";
