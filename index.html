@@ -321,7 +321,7 @@
     </div>
   </div>
 
-  <!-- Episode Multi-Quality Selection Popup Modal -->
+  <!-- Multi-Quality Selection Popup Modal (Episodes & Season ZIPs) -->
   <div id="epQualityModal" onclick="if(event.target===this) closeEpQualityModal()" class="fixed inset-0 z-[55] hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4">
     <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
@@ -444,7 +444,7 @@
           <input id="inPoster" type="url" placeholder="https://i.ibb.co/xxxxxxx/poster.jpg" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
         </div>
 
-        <!-- Complete Season ZIP Packs Section (Shown only in Web Series mode) -->
+        <!-- Complete Season ZIP Packs Section (Shown only in Web Series mode, Multi-Quality) -->
         <div id="zipSectionWrap" class="hidden space-y-2 pt-1 p-3 rounded-xl bg-amber-500/5 border border-amber-500/30">
           <div class="flex items-center justify-between">
             <label class="block text-xs font-extrabold text-amber-400">📦 Complete Season ZIP Packs (Optional)</label>
@@ -829,7 +829,7 @@
       modal.classList.remove("flex");
     }
 
-    // ==================== CATEGORY CHIPS, NESTED SEASONS & MULTI-QUALITY EPISODES ====================
+    // ==================== CATEGORY CHIPS, NESTED SEASONS & MULTI-QUALITY ZIP/EPISODES ====================
     function renderFormCategoryChips() {
       const wrap = document.getElementById("inCategoryChips");
       if (!wrap) return;
@@ -895,8 +895,8 @@
       }
     }
 
-    // Complete Season ZIP Box (unchanged)
-    function addZipRow(seasonVal = "", labelVal = "1080p ZIP", sizeVal = "", urlVal = "") {
+    // Complete Season ZIP Box (With Multi-Quality Support)
+    function addZipRow(seasonVal = "", labelVal = "1080p ZIP", sizeVal = "", urlVal = "", skipDefaultQuality = false) {
       const wrap = document.getElementById("zipInputsWrap");
       const count = wrap.querySelectorAll(".zip-input-row").length;
       const autoSeason = (seasonVal || `SEASON ${count + 1} ZIP`).toUpperCase();
@@ -904,17 +904,36 @@
       const row = document.createElement("div");
       row.className = "p-2.5 rounded-xl bg-zinc-950 border border-amber-500/20 space-y-2 zip-input-row";
       row.innerHTML = `
-        <div class="grid grid-cols-12 gap-2">
-          <input type="text" value="${autoSeason}" placeholder="SEASON 1 ZIP" class="col-span-7 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs font-extrabold text-amber-400 uppercase outline-none focus:border-amber-500 zip-season" />
-          <input type="text" value="${labelVal}" placeholder="1080p ZIP" class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-amber-500 zip-label" />
-          <button type="button" onclick="this.closest('.zip-input-row').remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>
+        <div class="flex items-center justify-between gap-2">
+          <input type="text" value="${autoSeason}" placeholder="SEASON 1 ZIP" class="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs font-extrabold text-amber-400 uppercase outline-none focus:border-amber-500 zip-season" />
+          <button type="button" onclick="addQualityToZipBox(this)" class="text-[11px] font-bold bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-black border border-amber-500/30 px-2 py-1 rounded-lg transition">
+            + Add Quality
+          </button>
+          <button type="button" onclick="this.closest('.zip-input-row').remove()" class="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>
         </div>
-        <div class="grid grid-cols-12 gap-2">
-          <input type="text" value="${sizeVal}" placeholder="Total Size (4.2 GB)" class="col-span-5 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-amber-500 zip-size" />
-          <input type="url" value="${urlVal}" placeholder="https://tgfilestream... (ZIP URL)" class="col-span-7 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-amber-500 zip-url" />
-        </div>
+        <div class="zip-qualities-list space-y-1.5"></div>
       `;
       wrap.appendChild(row);
+      if (!skipDefaultQuality) {
+        addQualityToZipBox(row.querySelector(".zip-qualities-list"), true, labelVal, sizeVal, urlVal);
+      }
+      return row;
+    }
+
+    function addQualityToZipBox(el, isDirectList = false, qLabel = "", qSize = "", qUrl = "") {
+      const list = isDirectList ? el : el.closest(".zip-input-row").querySelector(".zip-qualities-list");
+      const count = list.querySelectorAll(".zip-quality-row").length;
+      const defaultRes = qLabel || (count === 0 ? "1080p ZIP" : count === 1 ? "720p ZIP" : "480p ZIP");
+
+      const qRow = document.createElement("div");
+      qRow.className = "grid grid-cols-12 gap-1.5 zip-quality-row";
+      qRow.innerHTML = `
+        <input type="text" value="${defaultRes}" placeholder="1080p / 720p ZIP" class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs font-semibold text-amber-300 outline-none focus:border-amber-500 zip-label" />
+        <input type="text" value="${qSize}" placeholder="Size (4.2 GB)" class="col-span-3 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-300 outline-none focus:border-amber-500 zip-size" />
+        <input type="url" value="${qUrl}" placeholder="https://tgfilestream..." class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-amber-500 zip-url" />
+        <button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-zinc-300 hover:text-white">✕</button>
+      `;
+      list.appendChild(qRow);
     }
 
     // Single Movie Quality Row
@@ -1125,8 +1144,19 @@
       setFormContentType(hasSeriesData ? "series" : "movie");
 
       if (hasSeriesData) {
+        // Group ZIP items by Season ZIP name
+        const zipGroupMap = new Map();
         zipItems.forEach(z => {
-          addZipRow(z.season || "SEASON 1 ZIP", z.label || "1080p ZIP", z.size || "", z.url || "");
+          const zKey = (z.season || "SEASON 1 ZIP").toUpperCase();
+          if (!zipGroupMap.has(zKey)) zipGroupMap.set(zKey, []);
+          zipGroupMap.get(zKey).push(z);
+        });
+        zipGroupMap.forEach((items, zKey) => {
+          const zCard = addZipRow(zKey, "", "", "", true);
+          const zqList = zCard.querySelector(".zip-qualities-list");
+          items.forEach(z => {
+            addQualityToZipBox(zqList, true, z.label || "1080p ZIP", z.size || "", z.url || "");
+          });
         });
 
         const seasonsBuilder = document.getElementById("seasonsBuilderWrap");
@@ -1323,7 +1353,49 @@
       }).join("");
     }
 
-    // ==================== MULTI-QUALITY EPISODE PICKER & SERIES RENDERER ====================
+    // ==================== MULTI-QUALITY PICKERS (EPISODES & SEASON ZIPs) ====================
+    function handleZipClick(event, movieId, zipSeasonTitle) {
+      const movie = allMovies.find(m => String(m.id) === String(movieId));
+      if (!movie) return;
+
+      const rawLinks = Array.isArray(movie.links) ? movie.links : [];
+      const matchingZips = rawLinks
+        .map((item, idx) => ({ ...item, _origIndex: idx }))
+        .filter(item =>
+          item &&
+          item.url &&
+          item.is_zip &&
+          (item.season || "SEASON 1 ZIP").toUpperCase() === zipSeasonTitle.toUpperCase()
+        );
+
+      if (matchingZips.length <= 1) {
+        const targetIdx = matchingZips[0] ? matchingZips[0]._origIndex : 0;
+        openDownloadPage(movieId, targetIdx);
+        return;
+      }
+
+      event.preventDefault();
+      document.getElementById("epQualityModalTitle").textContent = `📦 ${zipSeasonTitle}`;
+      const optionsWrap = document.getElementById("epQualityModalOptions");
+      optionsWrap.innerHTML = matchingZips.map(z => `
+        <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
+           onclick="openDownloadPage('${movie.id}', ${z._origIndex})"
+           class="w-full flex items-center justify-between p-3.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-amber-500/30 hover:border-amber-400 transition group">
+          <div>
+            <p class="text-sm font-extrabold text-amber-400 group-hover:text-amber-300">📦 ${z.label || '1080p ZIP'}</p>
+            <p class="text-[11px] text-zinc-400">${z.size || 'Complete Season Pack'}</p>
+          </div>
+          <span class="px-3 py-1.5 rounded-lg bg-amber-500 group-hover:bg-amber-400 text-black text-xs font-extrabold shadow">
+            Download →
+          </span>
+        </a>
+      `).join("");
+
+      const modal = document.getElementById("epQualityModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
     function handleEpisodeClick(event, movieId, seasonName, episodeName) {
       const movie = allMovies.find(m => String(m.id) === String(movieId));
       if (!movie) return;
@@ -1345,7 +1417,6 @@
         return;
       }
 
-      // Multiple qualities exist -> show Quality Picker Popup
       event.preventDefault();
       document.getElementById("epQualityModalTitle").textContent = `${seasonName} • ${episodeName}`;
       const optionsWrap = document.getElementById("epQualityModalOptions");
@@ -1389,11 +1460,25 @@
       const zipItems = indexedLinks.filter(item => item.is_zip);
       const episodeItems = indexedLinks.filter(item => !item.is_zip);
 
+      // Group duplicate ZIP season names (e.g. SEASON 1 ZIP in 1080p, 720p)
+      const groupedZips = [];
+      const seenZipMap = new Map();
+      zipItems.forEach(z => {
+        const zTitle = (z.season || "SEASON 1 ZIP").toUpperCase();
+        if (!seenZipMap.has(zTitle)) {
+          const grp = { title: zTitle, items: [z] };
+          seenZipMap.set(zTitle, grp);
+          groupedZips.push(grp);
+        } else {
+          seenZipMap.get(zTitle).items.push(z);
+        }
+      });
+
       const seasons = [...new Set(episodeItems.map(item => (item.season || "SEASON 1").toUpperCase()))];
       const currentSeason = seasons.includes(seasonName) ? seasonName : seasons[0];
       const seasonRawEpisodes = episodeItems.filter(item => (item.season || "SEASON 1").toUpperCase() === currentSeason);
 
-      // Group duplicate episode names (e.g. EPISODE 1 in 1080p, 720p, 480p) into a single episode button
+      // Group duplicate episode names (e.g. EPISODE 1 in 1080p, 720p, 480p)
       const groupedEpisodes = [];
       const seenEpMap = new Map();
       seasonRawEpisodes.forEach((ep, idx) => {
@@ -1407,7 +1492,7 @@
         }
       });
 
-      const zipBlockHTML = zipItems.length > 0 ? `
+      const zipBlockHTML = groupedZips.length > 0 ? `
         <div class="mb-5 p-3.5 rounded-2xl bg-gradient-to-b from-amber-500/10 to-zinc-950 border border-amber-500/40 space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-xs font-extrabold uppercase tracking-wider text-amber-400">
@@ -1416,21 +1501,25 @@
             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">ZIP</span>
           </div>
           <div class="space-y-2 pt-1">
-            ${zipItems.map(z => `
-              <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
-                 onclick="openDownloadPage('${movie.id}', ${z._origIndex})"
-                 class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-amber-500/40 hover:border-amber-400 transition group">
-                <div>
-                  <p class="text-xs sm:text-sm font-extrabold text-white group-hover:text-amber-300 uppercase transition">
-                    📦 ${(z.season || "SEASON 1 ZIP").toUpperCase()}
-                  </p>
-                  <p class="text-[11px] text-zinc-400">${z.label || '1080p ZIP'} • ${z.size || 'Complete Pack'}</p>
-                </div>
-                <span class="px-3 py-1.5 rounded-lg bg-amber-500 group-hover:bg-amber-400 text-black text-xs font-extrabold shadow shrink-0">
-                  ⬇ Download ZIP
-                </span>
-              </a>
-            `).join("")}
+            ${groupedZips.map(grp => {
+              const qBadges = grp.items.map(x => `${x.label || '1080p ZIP'}${x.size ? ' (' + x.size + ')' : ''}`).join(" • ");
+              const safeZipTitle = grp.title.replace(/'/g, "\\'");
+              return `
+                <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
+                   onclick="handleZipClick(event, '${movie.id}', '${safeZipTitle}')"
+                   class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-amber-500/40 hover:border-amber-400 transition group">
+                  <div>
+                    <p class="text-xs sm:text-sm font-extrabold text-white group-hover:text-amber-300 uppercase transition">
+                      📦 ${grp.title}
+                    </p>
+                    <p class="text-[11px] text-zinc-400">${qBadges}</p>
+                  </div>
+                  <span class="px-3 py-1.5 rounded-lg bg-amber-500 group-hover:bg-amber-400 text-black text-xs font-extrabold shadow shrink-0">
+                    ${grp.items.length > 1 ? 'Select Quality' : '⬇ Download ZIP'}
+                  </span>
+                </a>
+              `;
+            }).join("")}
           </div>
         </div>
       ` : "";
@@ -1467,7 +1556,7 @@
               ${currentSeason} — Tap an Episode to Choose Quality & Download:
             </p>
             ${groupedEpisodes.map((grp, i) => {
-              const qBadges = grp.items.map(x => x.label || movie.quality || '1080p').join(" • ");
+              const qBadges = grp.items.map(x => `${x.label || movie.quality || '1080p'}${x.size ? ' (' + x.size + ')' : ''}`).join(" • ");
               const safeSeason = currentSeason.replace(/'/g, "\\'");
               const safeEp = grp.title.replace(/'/g, "\\'");
               return `
@@ -1658,7 +1747,20 @@
       document.getElementById("mobileSearchInput").value = "";
       document.getElementById("qualityFilter").value = "ALL";
       document.getElementById("audioFilter").value = "ALL";
+      if (window.location.search) {
+        history.replaceState(null, "", window.location.pathname);
+      }
       selectCategory("All");
+    }
+
+    // ==================== URL SEARCH PARAMETER (?q=ramayana) ====================
+    function applyUrlSearchParam() {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get("q") || params.get("search");
+      if (query) {
+        document.getElementById("searchInput").value = query;
+        document.getElementById("mobileSearchInput").value = query;
+      }
     }
 
     async function fetchSupabaseMovies() {
@@ -1731,22 +1833,25 @@
       const linkEntries = [];
 
       if (formContentType === "series") {
-        // 1. Collect Complete Season ZIP Packs
+        // 1. Collect Complete Season ZIP Packs (Multi-Quality)
         const zipRows = Array.from(document.querySelectorAll(".zip-input-row"));
         for (const zRow of zipRows) {
           const zSeason = zRow.querySelector(".zip-season").value.trim().toUpperCase() || "SEASON 1 ZIP";
-          const zLabel = zRow.querySelector(".zip-label").value.trim() || "1080p ZIP";
-          const zSize = zRow.querySelector(".zip-size").value.trim() || "Complete Pack";
-          const rawZipUrl = zRow.querySelector(".zip-url").value.trim();
-          if (rawZipUrl) {
-            const url = await shortenWithGPLinks(rawZipUrl);
-            linkEntries.push({
-              is_zip: true,
-              season: zSeason,
-              label: zLabel,
-              size: zSize,
-              url
-            });
+          const zQualityRows = Array.from(zRow.querySelectorAll(".zip-quality-row"));
+          for (const zqRow of zQualityRows) {
+            const zLabel = zqRow.querySelector(".zip-label").value.trim() || "1080p ZIP";
+            const zSize = zqRow.querySelector(".zip-size").value.trim() || "Complete Pack";
+            const rawZipUrl = zqRow.querySelector(".zip-url").value.trim();
+            if (rawZipUrl) {
+              const url = await shortenWithGPLinks(rawZipUrl);
+              linkEntries.push({
+                is_zip: true,
+                season: zSeason,
+                label: zLabel,
+                size: zSize,
+                url
+              });
+            }
           }
         }
 
@@ -1821,6 +1926,7 @@
         error = res.error;
 
         if (!error) {
+          const directSearchUrl = `${window.location.origin}/?q=${encodeURIComponent(title)}`;
           await supabaseClient.functions.invoke('telegram-post', {
             body: {
               title,
@@ -1829,7 +1935,7 @@
               quality,
               audio,
               poster_url: poster_url || null,
-              site_url: window.location.origin
+              site_url: directSearchUrl
             }
           });
         }
@@ -1853,6 +1959,7 @@
     document.getElementById("audioFilter").addEventListener("change", filterAndRender);
 
     renderCategories();
+    applyUrlSearchParam();
     checkAdminSession();
     fetchSupabaseMovies();
   </script>
