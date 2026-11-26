@@ -1,0 +1,26 @@
+name: Render Keep-Alive & Dead Link Monitor
+
+on:
+  schedule:
+    # Prottek 10 minute por por Render server ping korbe (24/7 awake rakhbe)
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  keep_alive_and_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install requests
+        run: pip install requests
+      - name: Ping Render & Check Links
+        env:
+          RENDER_URL: "https://tgfilestream-7smz.onrender.com"
+          SUPABASE_URL: "https://brpyyaclataxkdgkbskt.supabase.co"
+          SUPABASE_KEY: "sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc"
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_ADMIN_ID: ${{ secrets.TG_ADMIN_ID }}
+        run: python monitor.py
