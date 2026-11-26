@@ -410,8 +410,15 @@
 
         <div>
           <label class="block text-xs text-zinc-400 mb-1">Movie / Series Title *</label>
-          <input required id="inTitle" type="text" placeholder="e.g. Mirzapur / Ramayana (2026)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
+          <div class="flex gap-2">
+            <input required id="inTitle" type="text" placeholder="e.g. Mirzapur / Ramayana (2026)" class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-rose-500" />
+            <button type="button" id="tmdbFetchBtn" onclick="autoFillFromTMDB()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold shrink-0 transition shadow">
+              ⚡ Auto-Fill
+            </button>
+          </div>
+          <div id="tmdbResultsWrap" class="hidden mt-2 space-y-1.5 max-h-48 overflow-y-auto bg-zinc-950 border border-zinc-800 rounded-xl p-2"></div>
         </div>
+
         <div>
           <label class="block text-xs text-zinc-400 mb-1.5">Categories * (Tap to select one or multiple)</label>
           <div id="inCategoryChips" class="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-zinc-950 border border-zinc-800"></div>
@@ -492,11 +499,94 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_GO-sp2LSA4bjKWcX2f8WAQ_p9GVA6Sc';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Adsterra Smartlink + GPLinks API + 0s Cooldown + 10s Countdown
+    // Adsterra Smartlink + GPLinks API + TMDB API
     const AD_DIRECT_LINK = "https://directyp.org/4/d9045b5a2f84f9ecfd07f8178384aea5";
     const GPLINKS_API_TOKEN = "a0096b12cfdda7690d872b7d985e1194c55d6575";
+    const TMDB_API_KEY = "d8e419361a17edb87d99bdd4ab00744b";
     const AD_COOLDOWN_SECONDS = 0;
     const DOWNLOAD_WAIT_SECONDS = 10;
+
+    // ==================== TMDB AUTO-FILL ====================
+    async function autoFillFromTMDB() {
+      const query = document.getElementById("inTitle").value.trim();
+      if (!query) {
+        alert("Age Movie ba Series-er naam likho!");
+        return;
+      }
+
+      const btn = document.getElementById("tmdbFetchBtn");
+      const resultsWrap = document.getElementById("tmdbResultsWrap");
+      btn.textContent = "Searching...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        const items = (data.results || []).filter(i => i.media_type === "movie" || i.media_type === "tv").slice(0, 5);
+
+        if (items.length === 0) {
+          alert("TMDB-te ei naame kichu pawa jayni.");
+          resultsWrap.classList.add("hidden");
+        } else {
+          resultsWrap.classList.remove("hidden");
+          resultsWrap.innerHTML = items.map(item => {
+            const name = item.title || item.name || "";
+            const date = item.release_date || item.first_air_date || "";
+            const yr = date ? date.slice(0, 4) : "N/A";
+            const typeLabel = item.media_type === "tv" ? "Series" : "Movie";
+            const poster = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "";
+            const safeItem = encodeURIComponent(JSON.stringify({
+              title: name,
+              date,
+              overview: item.overview || "",
+              poster,
+              media_type: item.media_type,
+              lang: item.original_language || ""
+            }));
+            return `
+              <button type="button" onclick="selectTMDBItem('${safeItem}')"
+                class="w-full flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-zinc-900 text-left transition">
+                <img src="${poster}" class="w-8 h-11 object-cover rounded bg-zinc-800 shrink-0" onerror="this.style.display='none'" />
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-bold text-white truncate">${name} (${yr})</p>
+                  <p class="text-[10px] text-amber-400 font-semibold">${typeLabel} • Lang: ${(item.original_language || '').toUpperCase()}</p>
+                </div>
+              </button>
+            `;
+          }).join("");
+        }
+      } catch (err) {
+        alert("TMDB fetch error: " + err.message);
+      }
+
+      btn.textContent = "⚡ Auto-Fill";
+      btn.disabled = false;
+    }
+
+    function selectTMDBItem(encoded) {
+      const item = JSON.parse(decodeURIComponent(encoded));
+      const yr = item.date ? item.date.slice(0, 4) : "";
+      document.getElementById("inTitle").value = yr ? `${item.title} (${yr})` : item.title;
+      if (item.date) document.getElementById("inReleaseDate").value = item.date;
+      if (item.poster) document.getElementById("inPoster").value = item.poster;
+      if (item.overview) document.getElementById("inDesc").value = item.overview;
+
+      if (item.media_type === "tv" && formContentType !== "series") {
+        setFormContentType("series");
+      }
+
+      if (item.lang === "hi") selectedFormCategories = ["Bollywood"];
+      else if (item.lang === "bn") selectedFormCategories = ["Bengali"];
+      else if (["te", "ta", "ml", "kn"].includes(item.lang)) selectedFormCategories = ["South Indian"];
+      else if (item.lang === "ja") selectedFormCategories = ["Anime"];
+      else if (item.lang === "en") selectedFormCategories = ["Hollywood"];
+
+      if (item.media_type === "tv" && !selectedFormCategories.includes("Web Series")) {
+        selectedFormCategories.push("Web Series");
+      }
+      renderFormCategoryChips();
+      document.getElementById("tmdbResultsWrap").classList.add("hidden");
+    }
 
     function triggerAdCooldown() {
       if (!AD_DIRECT_LINK) return;
@@ -1115,6 +1205,7 @@
       document.getElementById("editMovieId").value = movie.id;
       document.getElementById("addModalHeading").textContent = "Edit Movie / Series";
       document.getElementById("submitBtn").textContent = "Save Changes";
+      document.getElementById("tmdbResultsWrap").classList.add("hidden");
 
       document.getElementById("inTitle").value = movie.title || "";
       selectedFormCategories = Array.isArray(movie.categories) && movie.categories.length > 0
@@ -1144,7 +1235,6 @@
       setFormContentType(hasSeriesData ? "series" : "movie");
 
       if (hasSeriesData) {
-        // Group ZIP items by Season ZIP name
         const zipGroupMap = new Map();
         zipItems.forEach(z => {
           const zKey = (z.season || "SEASON 1 ZIP").toUpperCase();
@@ -1460,7 +1550,6 @@
       const zipItems = indexedLinks.filter(item => item.is_zip);
       const episodeItems = indexedLinks.filter(item => !item.is_zip);
 
-      // Group duplicate ZIP season names (e.g. SEASON 1 ZIP in 1080p, 720p)
       const groupedZips = [];
       const seenZipMap = new Map();
       zipItems.forEach(z => {
@@ -1478,7 +1567,6 @@
       const currentSeason = seasons.includes(seasonName) ? seasonName : seasons[0];
       const seasonRawEpisodes = episodeItems.filter(item => (item.season || "SEASON 1").toUpperCase() === currentSeason);
 
-      // Group duplicate episode names (e.g. EPISODE 1 in 1080p, 720p, 480p)
       const groupedEpisodes = [];
       const seenEpMap = new Map();
       seasonRawEpisodes.forEach((ep, idx) => {
@@ -1723,6 +1811,7 @@
       document.getElementById("inReleaseDate").value = new Date().toISOString().split("T")[0];
       document.getElementById("addModalHeading").textContent = "Publish New Movie / Series";
       document.getElementById("submitBtn").textContent = "Publish Movie";
+      document.getElementById("tmdbResultsWrap").classList.add("hidden");
       document.getElementById("zipInputsWrap").innerHTML = "";
       document.getElementById("movieLinkInputsWrap").innerHTML = "";
       document.getElementById("seasonsBuilderWrap").innerHTML = "";
@@ -1855,7 +1944,7 @@
           }
         }
 
-        // 2. Collect Nested Seasons & Multi-Quality Episodes (respecting current card order)
+        // 2. Collect Nested Seasons & Multi-Quality Episodes
         const seasonCards = Array.from(document.querySelectorAll(".season-card-box"));
         for (const sCard of seasonCards) {
           const sNum = sCard.querySelector(".season-num-input").value.trim() || "1";
