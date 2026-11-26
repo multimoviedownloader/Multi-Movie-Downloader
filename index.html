@@ -633,34 +633,37 @@
       return isZip ? `${res} ZIP` : res;
     }
 
-    async function autoDetectLinkInfo(urlInput, labelInput, sizeInput, isZip = false) {
+        async function autoDetectLinkInfo(urlInput, labelInput, sizeInput, isZip = false) {
       const url = urlInput.value.trim();
       if (!url || !/^https?:\/\//i.test(url)) return;
 
+      // 1. URL / Filename theke Quality detect
       const detectedQual = detectQualityFromText(decodeURIComponent(url), isZip);
       if (detectedQual && labelInput) {
         labelInput.value = detectedQual;
       }
 
+      // 2. Supabase Edge Function ('link-info') diye Server-Side Size & Filename fetch
       if (sizeInput) {
         const prevPlaceholder = sizeInput.placeholder;
         sizeInput.placeholder = "Detecting...";
         try {
-          const res = await fetch(url, { method: "HEAD" });
-          if (res.ok) {
-            const len = res.headers.get("content-length");
-            if (len) {
-              const formatted = formatBytes(parseInt(len, 10));
+          const { data, error } = await supabaseClient.functions.invoke("link-info", {
+            body: { url }
+          });
+
+          if (!error && data) {
+            if (data.sizeBytes) {
+              const formatted = formatBytes(data.sizeBytes);
               if (formatted) sizeInput.value = formatted;
             }
-            const disp = res.headers.get("content-disposition") || "";
-            const qualFromHeader = detectQualityFromText(disp, isZip);
-            if (qualFromHeader && labelInput && !detectedQual) {
-              labelInput.value = qualFromHeader;
+            if (data.disposition && labelInput && !detectedQual) {
+              const qualFromHeader = detectQualityFromText(data.disposition, isZip);
+              if (qualFromHeader) labelInput.value = qualFromHeader;
             }
           }
         } catch (e) {
-          // CORS block korle silently skip korbe
+          // Silently ignore if unreachable
         }
         sizeInput.placeholder = prevPlaceholder;
       }
