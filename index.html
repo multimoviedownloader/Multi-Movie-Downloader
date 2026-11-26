@@ -141,7 +141,7 @@
       </div>
     </main>
 
-    <!-- Adsterra Native Banner (Inside homeView so it only shows on homepage) -->
+    <!-- Adsterra Native Banner -->
     <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mb-8">
       <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-3">
         <p class="text-[10px] uppercase tracking-wider text-zinc-500 text-center mb-2">Sponsored Recommendations</p>
@@ -193,7 +193,6 @@
 
       <!-- Countdown / Instant Download Action Box -->
       <div class="rounded-2xl bg-zinc-950 border border-zinc-800 p-6 text-center space-y-4">
-        <!-- Timer State -->
         <div id="dlTimerBox" class="space-y-3">
           <div class="w-14 h-14 mx-auto rounded-full border-4 border-rose-500/30 border-t-rose-500 animate-spin"></div>
           <p class="text-sm sm:text-base font-bold text-white">
@@ -204,7 +203,6 @@
           </p>
         </div>
 
-        <!-- Ready State -->
         <div id="dlReadyBox" class="hidden space-y-4">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold">
             ● Direct Server Connected — Max Speed Unlocked
@@ -221,7 +219,7 @@
           </div>
         </div>
 
-        <!-- Real Auto-Playing Video Download Tutorial -->
+        <!-- Video Download Tutorial -->
         <div class="mt-4 text-left rounded-2xl bg-gradient-to-b from-amber-500/10 to-zinc-900 border border-amber-500/40 p-4 space-y-3">
           <div class="flex items-center justify-between gap-2">
             <span class="inline-flex items-center gap-1.5 text-xs font-extrabold text-amber-400">
@@ -320,6 +318,20 @@
           <div id="modalScreenshots" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Episode Multi-Quality Selection Popup Modal -->
+  <div id="epQualityModal" onclick="if(event.target===this) closeEpQualityModal()" class="fixed inset-0 z-[55] hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+    <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-rose-400">Select Video Quality</span>
+          <h4 id="epQualityModalTitle" class="text-base font-extrabold text-white">SEASON 1 • EPISODE 1</h4>
+        </div>
+        <button onclick="closeEpQualityModal()" class="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs">✕</button>
+      </div>
+      <div id="epQualityModalOptions" class="space-y-2.5"></div>
     </div>
   </div>
 
@@ -441,13 +453,25 @@
           <div id="zipInputsWrap" class="space-y-2"></div>
         </div>
 
-        <!-- Multi-Quality or Multi-Season/Episode Telegram Bot Links -->
-        <div class="space-y-2 pt-1">
+        <!-- Single Movie Links Section (Shown only in Movie mode) -->
+        <div id="movieLinksSection" class="space-y-2 pt-1">
           <div class="flex items-center justify-between">
-            <label id="linksSectionLabel" class="block text-xs font-semibold text-zinc-300">Download / Stream Links *</label>
-            <button type="button" id="addLinkRowBtn" onclick="addLinkRow()" class="text-xs font-bold text-rose-400 hover:text-rose-300">+ Add Quality</button>
+            <label class="block text-xs font-semibold text-zinc-300">Download / Stream Links *</label>
+            <button type="button" onclick="addMovieLinkRow()" class="text-xs font-bold text-rose-400 hover:text-rose-300">+ Add Quality</button>
           </div>
-          <div id="linkInputsWrap" class="space-y-2.5"></div>
+          <div id="movieLinkInputsWrap" class="space-y-2.5"></div>
+        </div>
+
+        <!-- Nested Seasons & Multi-Quality Episodes Builder (Shown only in Web Series mode) -->
+        <div id="seriesSeasonsSection" class="hidden space-y-2.5 pt-1">
+          <div class="flex items-center justify-between gap-2">
+            <label class="block text-xs font-extrabold text-zinc-200">📺 Seasons & Episodes *</label>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="sortSeasonCardsAuto()" class="text-[11px] font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-2.5 py-1 rounded-lg border border-zinc-700">⇅ Sort 1-2-3</button>
+              <button type="button" onclick="addSeasonCard()" class="text-xs font-extrabold bg-rose-600 hover:bg-rose-500 text-white px-3 py-1 rounded-lg shadow">+ Add Season</button>
+            </div>
+          </div>
+          <div id="seasonsBuilderWrap" class="space-y-3"></div>
         </div>
 
         <div>
@@ -533,6 +557,7 @@
 
       lastViewedMovieId = movie.id;
 
+      closeEpQualityModal();
       stopStreamPlayer();
       const modal = document.getElementById("movieModal");
       modal.classList.add("hidden");
@@ -643,8 +668,11 @@
     window.addEventListener("popstate", () => {
       const dlView = document.getElementById("downloadPageView");
       const movieModal = document.getElementById("movieModal");
+      const epQModal = document.getElementById("epQualityModal");
 
-      if (dlView && !dlView.classList.contains("hidden")) {
+      if (epQModal && !epQModal.classList.contains("hidden")) {
+        closeEpQualityModal();
+      } else if (dlView && !dlView.classList.contains("hidden")) {
         exitDownloadPage(true);
       } else if (movieModal && !movieModal.classList.contains("hidden")) {
         closeMovieModal(true);
@@ -801,7 +829,7 @@
       modal.classList.remove("flex");
     }
 
-    // ==================== CATEGORY CHIPS, ZIP & SERIES FORM LOGIC ====================
+    // ==================== CATEGORY CHIPS, NESTED SEASONS & MULTI-QUALITY EPISODES ====================
     function renderFormCategoryChips() {
       const wrap = document.getElementById("inCategoryChips");
       if (!wrap) return;
@@ -838,38 +866,36 @@
       formContentType = type;
       const btnMovie = document.getElementById("typeBtnMovie");
       const btnSeries = document.getElementById("typeBtnSeries");
-      const label = document.getElementById("linksSectionLabel");
-      const addBtn = document.getElementById("addLinkRowBtn");
       const zipSection = document.getElementById("zipSectionWrap");
+      const movieLinksSec = document.getElementById("movieLinksSection");
+      const seriesSeasonsSec = document.getElementById("seriesSeasonsSection");
 
       if (type === "series") {
         btnSeries.className = "py-2 rounded-lg text-xs font-extrabold transition bg-rose-600 text-white shadow";
         btnMovie.className = "py-2 rounded-lg text-xs font-extrabold transition text-zinc-400 hover:text-white";
-        label.textContent = "Single Episodes *";
-        addBtn.textContent = "+ Add Episode";
         zipSection.classList.remove("hidden");
+        movieLinksSec.classList.add("hidden");
+        seriesSeasonsSec.classList.remove("hidden");
         if (!selectedFormCategories.includes("Web Series") && !selectedFormCategories.includes("Anime")) {
           selectedFormCategories.push("Web Series");
           renderFormCategoryChips();
         }
+        if (document.getElementById("seasonsBuilderWrap").children.length === 0) {
+          addSeasonCard(1);
+        }
       } else {
         btnMovie.className = "py-2 rounded-lg text-xs font-extrabold transition bg-rose-600 text-white shadow";
         btnSeries.className = "py-2 rounded-lg text-xs font-extrabold transition text-zinc-400 hover:text-white";
-        label.textContent = "Download / Stream Links *";
-        addBtn.textContent = "+ Add Quality";
         zipSection.classList.add("hidden");
-      }
-
-      document.getElementById("zipInputsWrap").innerHTML = "";
-      const wrap = document.getElementById("linkInputsWrap");
-      wrap.innerHTML = "";
-      if (type === "series") {
-        addLinkRow("1080p", "", "", true, "SEASON 1", "EPISODE 1");
-      } else {
-        addLinkRow("1080p Full HD", "", "", true);
+        movieLinksSec.classList.remove("hidden");
+        seriesSeasonsSec.classList.add("hidden");
+        if (document.getElementById("movieLinkInputsWrap").children.length === 0) {
+          addMovieLinkRow("1080p Full HD", "", "", true);
+        }
       }
     }
 
+    // Complete Season ZIP Box (unchanged)
     function addZipRow(seasonVal = "", labelVal = "1080p ZIP", sizeVal = "", urlVal = "") {
       const wrap = document.getElementById("zipInputsWrap");
       const count = wrap.querySelectorAll(".zip-input-row").length;
@@ -891,42 +917,177 @@
       wrap.appendChild(row);
     }
 
-    function addLinkRow(labelVal = "", sizeVal = "", urlVal = "", isFirst = false, seasonVal = "", episodeVal = "") {
-      const wrap = document.getElementById("linkInputsWrap");
+    // Single Movie Quality Row
+    function addMovieLinkRow(labelVal = "", sizeVal = "", urlVal = "", isFirst = false) {
+      const wrap = document.getElementById("movieLinkInputsWrap");
       const row = document.createElement("div");
-
-      if (formContentType === "series") {
-        const lastRow = wrap.querySelector(".link-input-row:last-child");
-        const autoSeason = (seasonVal || (lastRow ? lastRow.querySelector(".link-season").value : "SEASON 1")).toUpperCase();
-        const sameSeasonCount = Array.from(wrap.querySelectorAll(".link-input-row"))
-          .filter(r => r.querySelector(".link-season").value.trim().toUpperCase() === autoSeason).length;
-        const autoEpisode = episodeVal || `EPISODE ${sameSeasonCount + 1}`;
-
-        row.className = "p-2.5 rounded-xl bg-zinc-950/90 border border-zinc-800 space-y-2 link-input-row";
-        row.innerHTML = `
-          <div class="grid grid-cols-12 gap-2">
-            <input type="text" value="${autoSeason}" placeholder="SEASON 1" class="col-span-5 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs font-bold text-amber-400 uppercase outline-none focus:border-rose-500 link-season" />
-            <input type="text" value="${autoEpisode}" placeholder="EPISODE 1" class="col-span-6 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white uppercase outline-none focus:border-rose-500 link-episode" />
-            ${isFirst ? '<div class="col-span-1"></div>' : '<button type="button" onclick="this.closest(\'.link-input-row\').remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>'}
-          </div>
-          <div class="grid grid-cols-12 gap-2">
-            <input type="text" value="${labelVal || '1080p'}" placeholder="1080p / 720p" class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-rose-500 link-label" />
-            <input type="text" value="${sizeVal}" placeholder="Size (450 MB)" class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-rose-500 link-size" />
-            <input ${isFirst ? 'required' : ''} type="url" value="${urlVal}" placeholder="https://tgfilestream..." class="col-span-4 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-rose-500 link-url" />
-          </div>
-        `;
-      } else {
-        row.className = "grid grid-cols-12 gap-2 link-input-row";
-        row.innerHTML = `
-          <input type="text" value="${labelVal}" placeholder="1080p / 720p" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-label" />
-          <input type="text" value="${sizeVal}" placeholder="Size (3.43 GB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-size" />
-          <input ${isFirst ? 'required' : ''} type="url" value="${urlVal}" placeholder="https://tgfilestream..." class="${isFirst ? 'col-span-5' : 'col-span-4'} bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-url" />
-          ${isFirst ? '' : '<button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>'}
-        `;
-      }
+      row.className = "grid grid-cols-12 gap-2 movie-link-row";
+      row.innerHTML = `
+        <input type="text" value="${labelVal}" placeholder="1080p / 720p" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-label" />
+        <input type="text" value="${sizeVal}" placeholder="Size (3.43 GB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-size" />
+        <input ${isFirst ? 'required' : ''} type="url" value="${urlVal}" placeholder="https://tgfilestream..." class="${isFirst ? 'col-span-5' : 'col-span-4'} bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white outline-none focus:border-rose-500 link-url" />
+        ${isFirst ? '' : '<button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-white">✕</button>'}
+      `;
       wrap.appendChild(row);
     }
 
+    // Nested Season Accordion Card
+    function addSeasonCard(defaultNum = null, skipDefaultEpisode = false) {
+      const wrap = document.getElementById("seasonsBuilderWrap");
+      const existingCount = wrap.querySelectorAll(".season-card-box").length;
+      const sNum = defaultNum || (existingCount + 1);
+
+      const card = document.createElement("div");
+      card.className = "rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden season-card-box";
+      card.dataset.pinned = "0";
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between gap-2 px-3 py-2.5 bg-zinc-900/90 border-b border-zinc-800">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-extrabold text-amber-400">SEASON</span>
+            <input type="number" min="1" value="${sNum}" class="w-14 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1 text-xs font-extrabold text-amber-400 text-center outline-none focus:border-amber-500 season-num-input" />
+            <span class="text-[11px] text-zinc-400 ep-badge">(0 Ep)</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button type="button" onclick="togglePinSeasonCard(this)" title="Pin Season Top" class="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-zinc-200 pin-btn">📌</button>
+            <button type="button" onclick="moveSeasonCard(this, -1)" title="Move Up" class="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-zinc-200">↑</button>
+            <button type="button" onclick="moveSeasonCard(this, 1)" title="Move Down" class="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-zinc-200">↓</button>
+            <button type="button" onclick="toggleSeasonBody(this)" title="Collapse/Expand" class="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-zinc-200">▲</button>
+            <button type="button" onclick="removeSeasonCard(this)" title="Delete Season" class="px-2 py-1 rounded bg-zinc-800 hover:bg-red-600 text-[11px] font-bold text-rose-400 hover:text-white">✕</button>
+          </div>
+        </div>
+
+        <div class="p-3 space-y-2.5 season-card-body">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Episodes in this Season</span>
+            <button type="button" onclick="addEpisodeToSeasonCard(this)" class="text-[11px] font-bold bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 px-2.5 py-1 rounded-lg transition">
+              + Add Episode
+            </button>
+          </div>
+          <div class="season-episodes-list space-y-2.5"></div>
+        </div>
+      `;
+
+      wrap.appendChild(card);
+      if (!skipDefaultEpisode) {
+        addEpisodeToSeasonCard(card.querySelector(".season-episodes-list"), true);
+      }
+      return card;
+    }
+
+    function addEpisodeToSeasonCard(el, isDirectList = false, epTitleVal = "", skipDefaultQuality = false) {
+      const list = isDirectList ? el : el.closest(".season-card-body").querySelector(".season-episodes-list");
+      const nextNum = list.querySelectorAll(".ep-item-box").length + 1;
+      const epName = epTitleVal || `EPISODE ${nextNum}`;
+
+      const epBox = document.createElement("div");
+      epBox.className = "p-2.5 rounded-xl bg-zinc-900/70 border border-zinc-800 space-y-2 ep-item-box";
+      epBox.innerHTML = `
+        <div class="flex items-center justify-between gap-2">
+          <input type="text" value="${epName}" placeholder="EPISODE 1" class="w-36 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs font-extrabold text-white uppercase outline-none focus:border-rose-500 ep-title-input" />
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="addQualityToEpisodeBox(this)" class="text-[11px] font-bold bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/30 px-2 py-1 rounded-lg transition">
+              + Add Quality
+            </button>
+            <button type="button" onclick="removeEpisodeBox(this)" class="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-zinc-300 hover:text-white">✕</button>
+          </div>
+        </div>
+        <div class="ep-qualities-list space-y-1.5"></div>
+      `;
+
+      list.appendChild(epBox);
+      if (!skipDefaultQuality) {
+        addQualityToEpisodeBox(epBox.querySelector(".ep-qualities-list"), true, "1080p", "", "");
+      }
+      updateSeasonEpBadge(list);
+      return epBox;
+    }
+
+    function addQualityToEpisodeBox(el, isDirectList = false, qLabel = "", qSize = "", qUrl = "") {
+      const list = isDirectList ? el : el.closest(".ep-item-box").querySelector(".ep-qualities-list");
+      const count = list.querySelectorAll(".ep-quality-row").length;
+      const defaultRes = qLabel || (count === 0 ? "1080p" : count === 1 ? "720p" : "480p");
+
+      const row = document.createElement("div");
+      row.className = "grid grid-cols-12 gap-1.5 ep-quality-row";
+      row.innerHTML = `
+        <input type="text" value="${defaultRes}" placeholder="1080p / 720p / 480p" class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs font-semibold text-amber-300 outline-none focus:border-rose-500 ep-q-label" />
+        <input type="text" value="${qSize}" placeholder="Size (450 MB)" class="col-span-3 bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-300 outline-none focus:border-rose-500 ep-q-size" />
+        <input type="url" value="${qUrl}" placeholder="https://tgfilestream..." class="col-span-4 bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-rose-500 ep-q-url" />
+        <button type="button" onclick="this.parentElement.remove()" class="col-span-1 rounded-lg bg-zinc-800 hover:bg-red-600 text-xs text-zinc-300 hover:text-white">✕</button>
+      `;
+      list.appendChild(row);
+    }
+
+    function removeEpisodeBox(btn) {
+      const list = btn.closest(".season-episodes-list");
+      btn.closest(".ep-item-box").remove();
+      updateSeasonEpBadge(list);
+    }
+
+    function updateSeasonEpBadge(el) {
+      const card = el.closest(".season-card-box");
+      if (!card) return;
+      const count = card.querySelectorAll(".ep-item-box").length;
+      card.querySelector(".ep-badge").textContent = `(${count} Ep)`;
+    }
+
+    function toggleSeasonBody(btn) {
+      const body = btn.closest(".season-card-box").querySelector(".season-card-body");
+      body.classList.toggle("hidden");
+      btn.textContent = body.classList.contains("hidden") ? "▼" : "▲";
+    }
+
+    function removeSeasonCard(btn) {
+      if (confirm("Delete this Season and all its episodes?")) {
+        btn.closest(".season-card-box").remove();
+      }
+    }
+
+    function togglePinSeasonCard(btn) {
+      const card = btn.closest(".season-card-box");
+      const wrap = document.getElementById("seasonsBuilderWrap");
+      const isPinned = card.dataset.pinned === "1";
+
+      if (!isPinned) {
+        card.dataset.pinned = "1";
+        card.classList.add("border-amber-500");
+        btn.classList.remove("bg-zinc-800", "text-zinc-200");
+        btn.classList.add("bg-amber-500", "text-black");
+        wrap.prepend(card);
+      } else {
+        card.dataset.pinned = "0";
+        card.classList.remove("border-amber-500");
+        btn.classList.remove("bg-amber-500", "text-black");
+        btn.classList.add("bg-zinc-800", "text-zinc-200");
+      }
+    }
+
+    function moveSeasonCard(btn, dir) {
+      const card = btn.closest(".season-card-box");
+      const wrap = document.getElementById("seasonsBuilderWrap");
+      if (dir === -1 && card.previousElementSibling) {
+        wrap.insertBefore(card, card.previousElementSibling);
+      } else if (dir === 1 && card.nextElementSibling) {
+        wrap.insertBefore(card.nextElementSibling, card);
+      }
+    }
+
+    function sortSeasonCardsAuto() {
+      const wrap = document.getElementById("seasonsBuilderWrap");
+      const cards = Array.from(wrap.querySelectorAll(".season-card-box"));
+      cards.sort((a, b) => {
+        const pinA = parseInt(a.dataset.pinned || "0", 10);
+        const pinB = parseInt(b.dataset.pinned || "0", 10);
+        if (pinA !== pinB) return pinB - pinA;
+        const numA = parseInt(a.querySelector(".season-num-input").value || "999", 10);
+        const numB = parseInt(b.querySelector(".season-num-input").value || "999", 10);
+        return numA - numB;
+      });
+      cards.forEach(c => wrap.appendChild(c));
+    }
+
+    // ==================== EDIT MODAL POPULATOR ====================
     function openEditModal(event, id) {
       event.stopPropagation();
       const movie = allMovies.find(m => String(m.id) === String(id));
@@ -956,31 +1117,59 @@
       document.getElementById("inScreenshots").value = screenshotUrls.join(", ");
 
       const hasSeriesData = zipItems.length > 0 || episodeOrMovieItems.some(item => item.season || item.episode);
+
+      document.getElementById("zipInputsWrap").innerHTML = "";
+      document.getElementById("movieLinkInputsWrap").innerHTML = "";
+      document.getElementById("seasonsBuilderWrap").innerHTML = "";
+
       setFormContentType(hasSeriesData ? "series" : "movie");
 
-      const zipWrap = document.getElementById("zipInputsWrap");
-      zipWrap.innerHTML = "";
-      if (zipItems.length > 0) {
+      if (hasSeriesData) {
         zipItems.forEach(z => {
           addZipRow(z.season || "SEASON 1 ZIP", z.label || "1080p ZIP", z.size || "", z.url || "");
         });
-      }
 
-      const wrap = document.getElementById("linkInputsWrap");
-      wrap.innerHTML = "";
-      if (episodeOrMovieItems.length > 0) {
-        episodeOrMovieItems.forEach((item, idx) => {
-          addLinkRow(
-            item.label || "",
-            item.size || "",
-            item.url || "",
-            idx === 0,
-            item.season || "SEASON 1",
-            item.episode || `EPISODE ${idx + 1}`
-          );
-        });
+        const seasonsBuilder = document.getElementById("seasonsBuilderWrap");
+        seasonsBuilder.innerHTML = "";
+
+        if (episodeOrMovieItems.length > 0) {
+          const seasonMap = new Map();
+          episodeOrMovieItems.forEach((item, idx) => {
+            const sKey = (item.season || "SEASON 1").toUpperCase();
+            const eKey = (item.episode || `EPISODE ${idx + 1}`).toUpperCase();
+            if (!seasonMap.has(sKey)) seasonMap.set(sKey, new Map());
+            const epMap = seasonMap.get(sKey);
+            if (!epMap.has(eKey)) epMap.set(eKey, []);
+            epMap.get(eKey).push(item);
+          });
+
+          seasonMap.forEach((epMap, sKey) => {
+            const numMatch = sKey.match(/\d+/);
+            const sNum = numMatch ? parseInt(numMatch[0], 10) : 1;
+            const sCard = addSeasonCard(sNum, true);
+            const epListEl = sCard.querySelector(".season-episodes-list");
+
+            epMap.forEach((qItems, eKey) => {
+              const epBox = addEpisodeToSeasonCard(epListEl, true, eKey, true);
+              const qListEl = epBox.querySelector(".ep-qualities-list");
+              qItems.forEach(q => {
+                addQualityToEpisodeBox(qListEl, true, q.label || "1080p", q.size || "", q.url || "");
+              });
+            });
+          });
+        } else {
+          addSeasonCard(1);
+        }
       } else {
-        addLinkRow("1080p Full HD", "", "", true);
+        const movieWrap = document.getElementById("movieLinkInputsWrap");
+        movieWrap.innerHTML = "";
+        if (episodeOrMovieItems.length > 0) {
+          episodeOrMovieItems.forEach((item, idx) => {
+            addMovieLinkRow(item.label || "", item.size || "", item.url || "", idx === 0);
+          });
+        } else {
+          addMovieLinkRow("1080p Full HD", "", "", true);
+        }
       }
 
       const modal = document.getElementById("addModal");
@@ -1134,7 +1323,59 @@
       }).join("");
     }
 
-    // ==================== COMPLETE SEASON ZIP + EPISODES RENDERER ====================
+    // ==================== MULTI-QUALITY EPISODE PICKER & SERIES RENDERER ====================
+    function handleEpisodeClick(event, movieId, seasonName, episodeName) {
+      const movie = allMovies.find(m => String(m.id) === String(movieId));
+      if (!movie) return;
+
+      const rawLinks = Array.isArray(movie.links) ? movie.links : [];
+      const matchingQualities = rawLinks
+        .map((item, idx) => ({ ...item, _origIndex: idx }))
+        .filter(item =>
+          item &&
+          item.url &&
+          !item.is_zip &&
+          (item.season || "SEASON 1").toUpperCase() === seasonName.toUpperCase() &&
+          (item.episode || "EPISODE 1").toUpperCase() === episodeName.toUpperCase()
+        );
+
+      if (matchingQualities.length <= 1) {
+        const targetIdx = matchingQualities[0] ? matchingQualities[0]._origIndex : 0;
+        openDownloadPage(movieId, targetIdx);
+        return;
+      }
+
+      // Multiple qualities exist -> show Quality Picker Popup
+      event.preventDefault();
+      document.getElementById("epQualityModalTitle").textContent = `${seasonName} • ${episodeName}`;
+      const optionsWrap = document.getElementById("epQualityModalOptions");
+      optionsWrap.innerHTML = matchingQualities.map(q => `
+        <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
+           onclick="openDownloadPage('${movie.id}', ${q._origIndex})"
+           class="w-full flex items-center justify-between p-3.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 hover:border-rose-500 transition group">
+          <div>
+            <p class="text-sm font-extrabold text-amber-400 group-hover:text-amber-300">⚡ ${q.label || '1080p HD'}</p>
+            <p class="text-[11px] text-zinc-400">${q.size || 'High-Speed Cloud'}</p>
+          </div>
+          <span class="px-3 py-1.5 rounded-lg bg-rose-600 group-hover:bg-rose-500 text-white text-xs font-bold shadow">
+            Download →
+          </span>
+        </a>
+      `).join("");
+
+      const modal = document.getElementById("epQualityModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeEpQualityModal() {
+      const modal = document.getElementById("epQualityModal");
+      if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+    }
+
     function renderSeriesEpisodes(movieId, seasonName) {
       const movie = allMovies.find(m => String(m.id) === String(movieId));
       if (!movie) return;
@@ -1150,7 +1391,21 @@
 
       const seasons = [...new Set(episodeItems.map(item => (item.season || "SEASON 1").toUpperCase()))];
       const currentSeason = seasons.includes(seasonName) ? seasonName : seasons[0];
-      const seasonEpisodes = episodeItems.filter(item => (item.season || "SEASON 1").toUpperCase() === currentSeason);
+      const seasonRawEpisodes = episodeItems.filter(item => (item.season || "SEASON 1").toUpperCase() === currentSeason);
+
+      // Group duplicate episode names (e.g. EPISODE 1 in 1080p, 720p, 480p) into a single episode button
+      const groupedEpisodes = [];
+      const seenEpMap = new Map();
+      seasonRawEpisodes.forEach((ep, idx) => {
+        const epTitle = (ep.episode || `EPISODE ${idx + 1}`).toUpperCase();
+        if (!seenEpMap.has(epTitle)) {
+          const group = { title: epTitle, items: [ep] };
+          seenEpMap.set(epTitle, group);
+          groupedEpisodes.push(group);
+        } else {
+          seenEpMap.get(epTitle).items.push(ep);
+        }
+      });
 
       const zipBlockHTML = zipItems.length > 0 ? `
         <div class="mb-5 p-3.5 rounded-2xl bg-gradient-to-b from-amber-500/10 to-zinc-950 border border-amber-500/40 space-y-2">
@@ -1183,11 +1438,14 @@
       const episodesBlockHTML = episodeItems.length > 0 ? `
         <div>
           <p class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2.5">📺 Single Episodes:</p>
-          <!-- Stacked Season Buttons (SEASON 1, SEASON 2...) -->
           <div class="space-y-2 mb-4">
             ${seasons.map(s => {
               const isSelected = s === currentSeason;
-              const epCount = episodeItems.filter(i => (i.season || "SEASON 1").toUpperCase() === s).length;
+              const uniqueEpCount = new Set(
+                episodeItems
+                  .filter(i => (i.season || "SEASON 1").toUpperCase() === s)
+                  .map((i, idx) => (i.episode || `EPISODE ${idx + 1}`).toUpperCase())
+              ).size;
               return `
                 <button type="button" onclick="renderSeriesEpisodes('${movie.id}', '${s.replace(/'/g, "\\'")}')"
                   class="w-full flex items-center justify-between px-4 py-3 rounded-xl font-extrabold text-xs sm:text-sm uppercase tracking-wider transition border ${
@@ -1197,35 +1455,36 @@
                   }">
                   <span>📺 ${s}</span>
                   <span class="text-[11px] font-bold px-2 py-0.5 rounded-md ${isSelected ? 'bg-black/30 text-white' : 'bg-zinc-900 text-zinc-400'}">
-                    ${epCount} ${epCount === 1 ? 'Episode' : 'Episodes'} ${isSelected ? '▼' : '▶'}
+                    ${uniqueEpCount} ${uniqueEpCount === 1 ? 'Episode' : 'Episodes'} ${isSelected ? '▼' : '▶'}
                   </span>
                 </button>
               `;
             }).join("")}
           </div>
 
-          <!-- Vertical Episode List for Selected Season -->
           <div class="space-y-2 pt-2 border-t border-zinc-800/80">
             <p class="text-[11px] font-bold uppercase tracking-wider text-amber-400 mb-2">
-              ${currentSeason} — Tap an Episode to Download:
+              ${currentSeason} — Tap an Episode to Choose Quality & Download:
             </p>
-            ${seasonEpisodes.map((ep, i) => {
-              const epTitle = (ep.episode || `EPISODE ${i + 1}`).toUpperCase();
+            ${groupedEpisodes.map((grp, i) => {
+              const qBadges = grp.items.map(x => x.label || movie.quality || '1080p').join(" • ");
+              const safeSeason = currentSeason.replace(/'/g, "\\'");
+              const safeEp = grp.title.replace(/'/g, "\\'");
               return `
                 <a href="${AD_DIRECT_LINK}" target="_blank" rel="noopener noreferrer"
-                   onclick="openDownloadPage('${movie.id}', ${ep._origIndex})"
+                   onclick="handleEpisodeClick(event, '${movie.id}', '${safeSeason}', '${safeEp}')"
                    class="w-full flex items-center justify-between gap-3 p-3.5 rounded-xl bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-rose-500/60 transition group">
                   <div class="flex items-center gap-3">
                     <span class="w-8 h-8 rounded-lg bg-rose-600/15 border border-rose-500/30 text-rose-400 font-extrabold text-xs flex items-center justify-center shrink-0">
                       ${i + 1}
                     </span>
                     <div>
-                      <p class="text-sm font-extrabold text-white group-hover:text-rose-400 transition">${epTitle}</p>
-                      <p class="text-[11px] text-zinc-400">${ep.label || movie.quality || '1080p'} • ${ep.size || 'Direct Cloud'}</p>
+                      <p class="text-sm font-extrabold text-white group-hover:text-rose-400 transition">${grp.title}</p>
+                      <p class="text-[11px] text-zinc-400">${qBadges}</p>
                     </div>
                   </div>
                   <span class="px-3 py-1.5 rounded-lg bg-rose-600 group-hover:bg-rose-500 text-white text-xs font-bold shadow shrink-0">
-                    ⬇ Download
+                    ${grp.items.length > 1 ? 'Select Quality' : '⬇ Download'}
                   </span>
                 </a>
               `;
@@ -1355,6 +1614,7 @@
     }
 
     function closeMovieModal(fromPopState = false) {
+      closeEpQualityModal();
       stopStreamPlayer();
       activeSelectedSeason = null;
       lastViewedMovieId = null;
@@ -1374,6 +1634,9 @@
       document.getElementById("inReleaseDate").value = new Date().toISOString().split("T")[0];
       document.getElementById("addModalHeading").textContent = "Publish New Movie / Series";
       document.getElementById("submitBtn").textContent = "Publish Movie";
+      document.getElementById("zipInputsWrap").innerHTML = "";
+      document.getElementById("movieLinkInputsWrap").innerHTML = "";
+      document.getElementById("seasonsBuilderWrap").innerHTML = "";
       selectedFormCategories = ["Bollywood"];
       renderFormCategoryChips();
       setFormContentType("movie");
@@ -1444,6 +1707,7 @@
       filterAndRender();
     }
 
+    // ==================== FORM SUBMIT HANDLER ====================
     document.getElementById("addMovieForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!isAdmin) return;
@@ -1466,8 +1730,8 @@
 
       const linkEntries = [];
 
-      // 1. Collect Complete Season ZIP Packs (if Web Series)
       if (formContentType === "series") {
+        // 1. Collect Complete Season ZIP Packs
         const zipRows = Array.from(document.querySelectorAll(".zip-input-row"));
         for (const zRow of zipRows) {
           const zSeason = zRow.querySelector(".zip-season").value.trim().toUpperCase() || "SEASON 1 ZIP";
@@ -1485,25 +1749,48 @@
             });
           }
         }
-      }
 
-      // 2. Collect Episodes or Single Movie Qualities
-      const rows = Array.from(document.querySelectorAll(".link-input-row"));
-      for (const row of rows) {
-        const label = row.querySelector(".link-label").value.trim() || quality;
-        const size = row.querySelector(".link-size").value.trim() || "Direct Link";
-        const rawUrl = row.querySelector(".link-url").value.trim();
-        const seasonEl = row.querySelector(".link-season");
-        const episodeEl = row.querySelector(".link-episode");
+        // 2. Collect Nested Seasons & Multi-Quality Episodes (respecting current card order)
+        const seasonCards = Array.from(document.querySelectorAll(".season-card-box"));
+        for (const sCard of seasonCards) {
+          const sNum = sCard.querySelector(".season-num-input").value.trim() || "1";
+          const seasonName = `SEASON ${sNum}`;
+          const epBoxes = Array.from(sCard.querySelectorAll(".ep-item-box"));
 
-        if (rawUrl) {
-          const url = await shortenWithGPLinks(rawUrl);
-          const entry = { label, size, url };
-          if (formContentType === "series" && seasonEl && episodeEl) {
-            entry.season = seasonEl.value.trim().toUpperCase() || "SEASON 1";
-            entry.episode = episodeEl.value.trim().toUpperCase() || "EPISODE 1";
+          for (const epBox of epBoxes) {
+            const epName = epBox.querySelector(".ep-title-input").value.trim().toUpperCase() || "EPISODE 1";
+            const qRows = Array.from(epBox.querySelectorAll(".ep-quality-row"));
+
+            for (const qRow of qRows) {
+              const qLabel = qRow.querySelector(".ep-q-label").value.trim() || quality;
+              const qSize = qRow.querySelector(".ep-q-size").value.trim() || "Direct Link";
+              const rawUrl = qRow.querySelector(".ep-q-url").value.trim();
+
+              if (rawUrl) {
+                const url = await shortenWithGPLinks(rawUrl);
+                linkEntries.push({
+                  season: seasonName,
+                  episode: epName,
+                  label: qLabel,
+                  size: qSize,
+                  url
+                });
+              }
+            }
           }
-          linkEntries.push(entry);
+        }
+      } else {
+        // Single Movie Qualities
+        const rows = Array.from(document.querySelectorAll(".movie-link-row"));
+        for (const row of rows) {
+          const label = row.querySelector(".link-label").value.trim() || quality;
+          const size = row.querySelector(".link-size").value.trim() || "Direct Link";
+          const rawUrl = row.querySelector(".link-url").value.trim();
+
+          if (rawUrl) {
+            const url = await shortenWithGPLinks(rawUrl);
+            linkEntries.push({ label, size, url });
+          }
         }
       }
 
